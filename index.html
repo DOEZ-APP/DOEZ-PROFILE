@@ -413,6 +413,11 @@
     <div class="top-actions">
       <span class="pill">DOEZ ARCHIVE</span>
       <span class="edit-badge">✎ 편집 모드</span>
+	<button
+    id="saveBtn"
+    style="display:none;padding:7px 14px;border:none;border-radius:999px;background:#4caf50;color:white;font-weight:bold;cursor:pointer;">
+    💾 저장
+</button>
       <button class="icon-btn" id="adminBtn" title="관리자 인증">⚙</button>
     </div>
   </div>
@@ -631,45 +636,96 @@
 
 <script type="module">
 
-import { auth, db, signInWithEmailAndPassword } from "./firebase.js";
+import {
+  auth,
+  db,
+  signInWithEmailAndPassword
+} from "./firebase.js";
+
+import {
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
 
 /* ===================== STATE (in-memory only — resets on reload) ===================== */
 const ADMIN = { email: 'doez@admin.com', password: 'doez1224' };
 let editMode = false;
 
 const state = {
-  bday: '01-15',
-  debut: '2026-05-16',
-  notices: [
-    { badge:'안내', title:'제1회 도넛 행운 퀴즈쇼!', date:'2026.07.21' },
-    { badge:'안내', title:'[총 상금 30만원] 여름맞이 특별 방송', date:'2026.07.15' },
-  ],
-  schedule: [
-    { day:'월', text:'휴방 (재충전 데이)' },
-    { day:'화', text:'잡담 방송' },
-    { day:'수', text:'게임 DAY!' },
-    { day:'목', text:'협업 방송' },
-    { day:'금', text:'시참 · 이벤트' },
-    { day:'토', text:'노래 방송' },
-    { day:'일', text:'휴방' },
-  ],
-  outfits: [
-    { emoji:'👕', name:'기본 의상', tag:'평상복' },
-    { emoji:'🍩', name:'도넛 코스튬', tag:'이벤트' },
-    { emoji:'🎐', name:'유카타', tag:'여름 한정' },
-    { emoji:'🩱', name:'비키니', tag:'바캉스' },
-  ],
-  songs: [
-    { uid:1, title:'노란 별의 노래', artist:'도이지', language:'한국어', difficulty:2, note:'키업 없이 편안하게 부르기 좋아요' },
-    { uid:2, title:'한여름의 약속', artist:'도이지', language:'한국어', difficulty:4, note:'후렴 키업 +1 · 고음 구간 주의' },
-  ],
-  karma: [
-    { uid:1, name:'도넛사랑', id:'@donutlove', tags:[['랜덤엽핵방샏',1],['악마교복 방샏',1]] },
-    { uid:2, name:'클로버지기', id:'@cloverkeep', tags:[['옹짬방샏',1]] },
-    { uid:3, name:'도이지최고', id:'@doezbest', tags:[['플로팅 배너',1],['비키니',1]] },
-    { uid:4, name:'우리도이지짱', id:'@ourdoez', tags:[['하트 조각',1],['고정 채꾸',1]] },
-  ]
+
+  bday:'01-15',
+  debut:'2026-05-16',
+
+  about:"",
+
+  profile:{
+      broadcastTime:"",
+      broadcastMain:"",
+      broadcastGame:"",
+      fanNick:""
+  },
+
+  notices:[],
+  schedule:[],
+  outfits:[],
+  songs:[],
+  karma:[]
 };
+// ===================== FIRESTORE =====================
+
+const stateRef = doc(db, "site", "profile");
+
+async function saveState() {
+    try {
+
+        await setDoc(stateRef, state);
+
+        console.log("저장 완료");
+
+    } catch (err) {
+
+        console.error("저장 실패", err);
+
+    }
+}
+
+async function loadState() {
+    try {
+
+        const snap = await getDoc(stateRef);
+
+        if (!snap.exists()) {
+            console.log("저장된 데이터 없음");
+            return;
+        }
+
+        Object.assign(state, snap.data());
+
+	document.getElementById("aboutText").innerHTML = state.about;
+
+        document.querySelector('[data-field="broadcastTime"]').textContent =
+            state.profile.broadcastTime;
+
+        document.querySelector('[data-field="broadcastMain"]').textContent =
+            state.profile.broadcastMain;
+
+        document.querySelector('[data-field="broadcastGame"]').textContent =
+            state.profile.broadcastGame;
+
+        document.getElementById("fanNickText").textContent =
+            state.profile.fanNick;
+
+        console.log("불러오기 완료");
+
+    } catch (err) {
+
+        console.error("불러오기 실패", err);
+
+    }
+}
+
+// ===================== END FIRESTORE =====================
 
 /* Calendar events use a date, a category, and the name shown on the label. */
 state.schedule = [
@@ -1138,6 +1194,9 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
 
         editMode = true;
         applyEditMode();
+
+	document.getElementById("saveBtn").style.display = "inline-block";
+
         modal.classList.remove('show');
 
         document.getElementById('adminEmail').value = "";
@@ -1150,13 +1209,40 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
             "이메일 또는 비밀번호가 올바르지 않습니다.";
     }
 });
+document.getElementById("saveBtn").addEventListener("click", async () => {
+
+    state.about =
+        document.getElementById("aboutText").innerHTML;
+
+    state.profile.fanNick =
+        document.getElementById("fanNickText").textContent;
+
+    state.profile.broadcastTime =
+        document.querySelector('[data-field="broadcastTime"]').textContent;
+
+    state.profile.broadcastMain =
+        document.querySelector('[data-field="broadcastMain"]').textContent;
+
+    state.profile.broadcastGame =
+        document.querySelector('[data-field="broadcastGame"]').textContent;
+
+    await saveState();
+
+    alert("저장되었습니다!");
+
+});
 /* ===================== INIT ===================== */
-renderDday();
-renderNotices();
-renderSchedule();
-renderOutfits();
-renderSongs();
-renderKarma();
-</script>
-</body>
-</html>
+(async () => {
+
+    await loadState();
+
+    renderDday();
+    renderNotices();
+    renderSchedule();
+    renderOutfits();
+    renderSongbook();
+    renderKarma();
+
+    applyEditMode();
+
+})();
