@@ -631,7 +631,8 @@
 
 <script type="module">
 
-import { auth, db } from "./firebase.js";
+import { auth, db, signInWithEmailAndPassword } from "./firebase.js";
+
 /* ===================== STATE (in-memory only — resets on reload) ===================== */
 const ADMIN = { email: 'doez@admin.com', password: 'doez1224' };
 let editMode = false;
@@ -1128,18 +1129,27 @@ document.getElementById('adminBtn').addEventListener('click', ()=>{
   document.getElementById('adminError').textContent='';
 });
 document.getElementById('adminCancel').addEventListener('click', ()=> modal.classList.remove('show'));
-document.getElementById('adminConfirm').addEventListener('click', ()=>{
-  const email = document.getElementById('adminEmail').value.trim();
-  const pw = document.getElementById('adminPw').value;
-  if(email===ADMIN.email && pw===ADMIN.password){
-    editMode = true; applyEditMode();
-    modal.classList.remove('show');
-    document.getElementById('adminEmail').value=''; document.getElementById('adminPw').value='';
-  } else {
-    document.getElementById('adminError').textContent = '이메일 또는 비밀번호가 올바르지 않습니다.';
-  }
-});
+document.getElementById('adminConfirm').addEventListener('click', async () => {
+    const email = document.getElementById('adminEmail').value.trim();
+    const pw = document.getElementById('adminPw').value;
 
+    try {
+        await signInWithEmailAndPassword(auth, email, pw);
+
+        editMode = true;
+        applyEditMode();
+        modal.classList.remove('show');
+
+        document.getElementById('adminEmail').value = "";
+        document.getElementById('adminPw').value = "";
+        document.getElementById('adminError').textContent = "";
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById('adminError').textContent =
+            "이메일 또는 비밀번호가 올바르지 않습니다.";
+    }
+});
 /* ===================== INIT ===================== */
 renderDday();
 renderNotices();
