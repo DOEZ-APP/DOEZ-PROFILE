@@ -636,7 +636,7 @@
 
 <script type="module">
 
-/*
+
 import {
   auth,
   db,
@@ -648,7 +648,7 @@ import {
   getDoc,
   setDoc
 } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-*/
+
 /* ===================== STATE (in-memory only — resets on reload) ===================== */
 const ADMIN = { email: 'doez@admin.com', password: 'doez1224' };
 let editMode = false;
@@ -1235,7 +1235,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 /* ===================== INIT ===================== */
 (async () => {
 
-   await loadState();
+   // await loadState();
 
     renderDday();
     renderNotices();
