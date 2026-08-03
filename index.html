@@ -230,6 +230,12 @@
   }
   .notice-item:last-child{ border-bottom:none; }
   .notice-body{ flex:1; min-width:0; }
+  .notice-drag-handle{ display:none; flex:0 0 auto; width:28px; height:28px; border:1px solid var(--sand); border-radius:7px; background:var(--paper); color:var(--ink-soft); cursor:grab; font-size:16px; line-height:1; }
+  body.edit-mode .notice-drag-handle{ display:inline-flex; align-items:center; justify-content:center; }
+  .notice-drag-handle:active{ cursor:grabbing; }
+  .notice-item.is-dragging{ opacity:.45; }
+  .notice-item.is-drag-over-top{ box-shadow:inset 0 3px 0 var(--mint-deep); }
+  .notice-item.is-drag-over-bottom{ box-shadow:inset 0 -3px 0 var(--mint-deep); }
   body:not(.edit-mode) .notice-item.notice-clickable{ cursor:pointer; border-radius:10px; transition:background .15s ease, transform .15s ease; }
   body:not(.edit-mode) .notice-item.notice-clickable:hover{ background:var(--mint-pale); transform:translateX(2px); }
   body:not(.edit-mode) .notice-item.notice-clickable:focus-visible{ outline:2px solid var(--mint-deep); outline-offset:3px; }
@@ -255,6 +261,9 @@
   .notice-detail-image{ display:block; width:100%; max-height:360px; margin-top:16px; border:1px solid var(--sand); border-radius:12px; object-fit:contain; background:var(--cream); }
   .notice-detail-link{ display:inline-flex; align-items:center; justify-content:center; margin-top:18px; padding:10px 15px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:13px; font-weight:700; }
   .notice-detail-link:hover{ filter:brightness(1.08); }
+  .modal-box.outfit-image-modal-box{ width:min(680px, 92vw); max-height:88vh; padding:20px; }
+  .outfit-image-modal-box h3{ margin:0 38px 14px 0; color:var(--mint-deep); font-size:23px; }
+  .outfit-image-modal-image{ display:block; width:100%; max-height:70vh; border-radius:12px; object-fit:contain; background:var(--cream); }
 
   /* ---------- Monthly calendar ---------- */
   .month-calendar{ border:1px solid var(--sand); border-radius:14px; overflow:hidden; background:var(--paper); }
@@ -322,6 +331,8 @@
     display:flex; align-items:center; justify-content:center; font-size:34px; margin-bottom:8px;
     position:relative; overflow:hidden;
   }
+  body:not(.edit-mode) .outfit-swatch.has-image{ cursor:zoom-in; }
+  body:not(.edit-mode) .outfit-swatch.has-image:hover{ border-color:var(--mint-deep); }
   .outfit-card.active .outfit-swatch{ border-color:var(--mint-deep); }
   .outfit-visual{ width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
   .outfit-visual img{ width:100%; height:100%; object-fit:cover; }
@@ -401,6 +412,12 @@
   body.edit-mode .song-language-select{ display:inline-block; }
   .song-difficulty{ display:flex; align-items:center; gap:4px; color:var(--ink-soft); font-size:11px; }
   .song-stars{ color:var(--gold); letter-spacing:1px; font-size:14px; line-height:1; }
+  .song-play-link{ display:inline-flex; align-items:center; gap:5px; margin-top:7px; padding:5px 9px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:11px; font-weight:700; }
+  .song-play-link:hover{ filter:brightness(1.08); }
+  .song-play-link:not(.has-link), body.edit-mode .song-play-link{ display:none; }
+  .song-link-editor{ display:none; grid-column:1 / -1; gap:5px; color:var(--ink-soft); font-size:11px; font-weight:700; }
+  body.edit-mode .song-link-editor{ display:grid; }
+  .song-link-editor input{ width:100%; min-width:0; padding:7px 9px; border:1px solid var(--sand); border-radius:8px; background:var(--paper); color:var(--ink); font:inherit; font-size:12px; }
   .song-note{ grid-column:2; max-width:260px; color:var(--ink-soft); font-size:12px; line-height:1.45; text-align:right; }
   .song-edit-stars{ display:none; grid-column:1 / -1; align-items:center; gap:2px; padding-top:2px; }
   body.edit-mode .song-edit-stars{ display:flex; }
@@ -535,6 +552,54 @@
     font-size:12px;
     color:#c9a66b;
     letter-spacing:3px;
+}
+
+#eventEditor{
+    display:none;
+    margin-top:14px;
+    padding-top:14px;
+    border-top:1px dashed var(--sand);
+}
+body.edit-mode #eventEditor{ display:block; }
+.event-base-date{
+    display:flex;
+    align-items:end;
+    gap:12px;
+    margin-bottom:12px;
+    padding:12px;
+    border-radius:12px;
+    background:var(--mint-pale);
+}
+.event-base-date label{ display:grid; gap:5px; color:var(--mint-deep); font-size:12px; font-weight:700; }
+.event-base-date input, .event-editor-row input{
+    min-height:36px;
+    border:1px solid var(--sand);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink);
+    font:inherit;
+    font-size:13px;
+    padding:7px 9px;
+}
+.event-base-date .hint{ margin:0 0 3px; color:var(--ink-soft); font-size:11px; line-height:1.45; }
+.event-editor-row{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) 145px 34px;
+    gap:8px;
+    align-items:end;
+    margin-bottom:8px;
+    padding:10px;
+    border:1px solid var(--sand);
+    border-radius:10px;
+    background:#FCFAF5;
+}
+.event-editor-row label{ display:grid; gap:5px; min-width:0; color:var(--ink-soft); font-size:11px; font-weight:700; }
+.event-editor-row input{ width:100%; }
+.event-editor-delete{ width:30px; height:30px; border:0; border-radius:7px; background:#F7E9E4; color:#C0574A; cursor:pointer; font-size:16px; }
+@media(max-width:520px){
+    .event-base-date{ align-items:stretch; flex-direction:column; gap:7px; }
+    .event-editor-row{ grid-template-columns:minmax(0,1fr) 34px; }
+    .event-editor-row label:first-child{ grid-column:1 / -1; }
 }
 
 .thumb-btn{
@@ -1030,8 +1095,13 @@
 
   <div id="eventList"></div>
 
-<div id="eventEditor" style="display:none;">
-  
+<div id="eventEditor">
+  <div class="event-base-date">
+    <label>기준 날짜 (D-day 계산 기준)
+      <input type="date" id="eventBaseDate">
+    </label>
+    <p class="hint">일반 모드에서는 이벤트 이름과 D-day만 표시됩니다.</p>
+  </div>
 <div id="eventManager"></div>
 
   <button class="add-btn" id="addEvent">
@@ -1129,7 +1199,7 @@
   <div class="panel" id="panel-outfit">
     <div class="card">
       <div class="carousel-head">
-        <h2><span class="dot"></span>OUTFIT CATALOG 👗</h2>
+        <h2><span class="dot"></span>이지 옷장 👗</h2>
         <div class="carousel-nav">
           <button class="icon-btn" onclick="scrollTrack('outfitTrack',-1)">‹</button>
           <button class="icon-btn" onclick="scrollTrack('outfitTrack',1)">›</button>
@@ -1211,6 +1281,15 @@
   </div>
 </div>
 
+<!-- ================= OUTFIT IMAGE MODAL ================= -->
+<div class="modal" id="outfitImageModal" aria-hidden="true">
+  <div class="modal-box outfit-image-modal-box" role="dialog" aria-modal="true" aria-labelledby="outfitImageModalTitle">
+    <button class="modal-close" type="button" id="outfitImageModalClose" aria-label="닫기">×</button>
+    <h3 id="outfitImageModalTitle"></h3>
+    <img class="outfit-image-modal-image" id="outfitImageModalImage" alt="확대된 의상 이미지">
+  </div>
+</div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
@@ -1258,6 +1337,10 @@ async function saveState() {
   try {
 state.fanNick = document.getElementById("fanNickText").innerHTML;
 state.about = document.getElementById("aboutText").innerHTML;
+    if(getStateSize() > FIRESTORE_SAFE_STATE_BYTES){
+      showToast("❌ 이미지 용량이 너무 큽니다. 이미지 수를 줄이거나 다시 업로드해 주세요.");
+      return;
+    }
     await setDoc(doc(db, "site", "profile"), state);
 
     showToast("✅ 저장 완료.");
@@ -1292,6 +1375,15 @@ renderEventPreview();
 }
 /* ===================== STATE (in-memory only — resets on reload) ===================== */
 let currentEvent = 0;
+function toLocalDateKey(date = new Date()){
+  const year = date.getFullYear();
+  const month = String(date.getMonth()+1).padStart(2,'0');
+  const day = String(date.getDate()).padStart(2,'0');
+  return `${year}-${month}-${day}`;
+}
+function isValidEventDate(value){
+  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || '')) && !Number.isNaN(new Date(`${value}T00:00:00`).getTime());
+}
 const state = {
   bday: '01-15',
   debut: '2026-05-16',
@@ -1311,9 +1403,22 @@ fanNick: "°ezOOO",
   ],
   events: [
   ],
+eventBaseDate: toLocalDateKey(),
 ups:[],
 upList:[]
 };
+const FIRESTORE_SAFE_STATE_BYTES = 850000;
+function getStateSize(){
+  return new TextEncoder().encode(JSON.stringify(state)).length;
+}
+function getOutfitImageBudget(index){
+  const outfit = state.outfits[index];
+  const previousImage = outfit.image || '';
+  outfit.image = '';
+  const usedBytes = getStateSize();
+  outfit.image = previousImage;
+  return Math.min(280000, FIRESTORE_SAFE_STATE_BYTES - usedBytes);
+}
 
 /* Calendar events use a date, a category, and the name shown on the label. */
 state.schedule = [
@@ -1370,7 +1475,7 @@ function closeNoticeDetail(){
   modal.classList.remove('show');
   modal.setAttribute('aria-hidden','true');
 }
-function compressNoticeImage(file){
+function compressImageForFirestore(file, {maxSide=1200, maxBytes=500000}={}){
   if(!file || !file.type.startsWith('image/')) return Promise.reject(new Error('이미지 파일만 올릴 수 있습니다.'));
   return new Promise((resolve,reject)=>{
     const reader = new FileReader();
@@ -1379,28 +1484,58 @@ function compressNoticeImage(file){
       const image = new Image();
       image.onerror = ()=>reject(new Error('이미지를 처리하지 못했습니다.'));
       image.onload = ()=>{
-        const maxSide = 1200;
         const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
         const canvas = document.createElement('canvas');
-        canvas.width = Math.max(1, Math.round(image.width * scale));
-        canvas.height = Math.max(1, Math.round(image.height * scale));
-        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
-        const result = canvas.toDataURL('image/jpeg', .76);
-        if(result.length > 700000){
-          reject(new Error('이미지가 너무 큽니다. 더 작은 이미지를 선택해 주세요.'));
-          return;
+        let width = Math.max(1, Math.round(image.width * scale));
+        let height = Math.max(1, Math.round(image.height * scale));
+        let quality = .78;
+        let result = '';
+        for(let attempt=0; attempt<10; attempt++){
+          canvas.width = width;
+          canvas.height = height;
+          canvas.getContext('2d').drawImage(image, 0, 0, width, height);
+          // WebP keeps transparent PNG backgrounds transparent while still compressing well.
+          result = canvas.toDataURL('image/webp', quality);
+          if(result.length <= maxBytes){
+            resolve(result);
+            return;
+          }
+          if(quality > .42){
+            quality -= .09;
+          }else{
+            width = Math.max(1, Math.round(width*.8));
+            height = Math.max(1, Math.round(height*.8));
+            quality = .72;
+          }
         }
-        resolve(result);
+        reject(new Error('이미지를 충분히 줄일 수 없습니다. 더 작은 파일을 선택해 주세요.'));
       };
       image.src = reader.result;
     };
     reader.readAsDataURL(file);
   });
 }
+function compressNoticeImage(file){
+  return compressImageForFirestore(file, {maxSide:1200, maxBytes:500000});
+}
 document.getElementById('noticeDetailClose').addEventListener('click', closeNoticeDetail);
 document.getElementById('noticeDetailModal').addEventListener('click', event=>{
   if(event.target===event.currentTarget) closeNoticeDetail();
 });
+let draggedNoticeIndex = null;
+function clearNoticeDropIndicators(){
+  document.querySelectorAll('.notice-item.is-drag-over-top, .notice-item.is-drag-over-bottom')
+    .forEach(row=>row.classList.remove('is-drag-over-top','is-drag-over-bottom'));
+}
+function reorderNotice(draggedIndex, targetIndex, placeAfter){
+  if(draggedIndex===null || draggedIndex===undefined) return;
+  let insertIndex = targetIndex + (placeAfter ? 1 : 0);
+  const [notice] = state.notices.splice(draggedIndex,1);
+  if(draggedIndex < insertIndex) insertIndex--;
+  state.notices.splice(insertIndex,0,notice);
+  renderNotices();
+  applyEditMode();
+}
 function renderNotices(){
   const list = document.getElementById('noticeList');
   const preview = document.getElementById('noticePreview');
@@ -1410,7 +1545,8 @@ function renderNotices(){
     row.dataset.noticeIndex = i;
     row.setAttribute('role','button');
     row.tabIndex = editMode ? -1 : 0;
-    row.innerHTML = `<span class="notice-badge">${escapeHtml(n.badge || '공지')}</span>
+    row.innerHTML = `<button type="button" class="notice-drag-handle" draggable="true" aria-label="공지 순서 변경" title="드래그하여 순서 변경">⠿</button>
+      <span class="notice-badge">${escapeHtml(n.badge || '공지')}</span>
       <div class="notice-body">
         <div class="title" contenteditable="false">${escapeHtml(n.title || '')}</div>
         <div class="date">${escapeHtml(n.date || '')}</div>
@@ -1431,6 +1567,39 @@ const title = row.querySelector(".title");
 title.addEventListener("input", () => {
   state.notices[i].title = title.textContent.trim();
 });
+    const dragHandle = row.querySelector('.notice-drag-handle');
+    dragHandle.addEventListener('dragstart', event=>{
+      if(!editMode){ event.preventDefault(); return; }
+      draggedNoticeIndex = i;
+      row.classList.add('is-dragging');
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(i));
+    });
+    dragHandle.addEventListener('dragend', ()=>{
+      draggedNoticeIndex = null;
+      row.classList.remove('is-dragging');
+      clearNoticeDropIndicators();
+    });
+    row.addEventListener('dragover', event=>{
+      if(!editMode || draggedNoticeIndex===null || draggedNoticeIndex===i) return;
+      event.preventDefault();
+      clearNoticeDropIndicators();
+      const placeAfter = event.clientY > row.getBoundingClientRect().top + row.offsetHeight/2;
+      row.classList.add(placeAfter ? 'is-drag-over-bottom' : 'is-drag-over-top');
+      event.dataTransfer.dropEffect = 'move';
+    });
+    row.addEventListener('dragleave', event=>{
+      if(!row.contains(event.relatedTarget)) row.classList.remove('is-drag-over-top','is-drag-over-bottom');
+    });
+    row.addEventListener('drop', event=>{
+      if(!editMode || draggedNoticeIndex===null) return;
+      event.preventDefault();
+      const placeAfter = event.clientY > row.getBoundingClientRect().top + row.offsetHeight/2;
+      const fromIndex = draggedNoticeIndex;
+      draggedNoticeIndex = null;
+      clearNoticeDropIndicators();
+      reorderNotice(fromIndex, i, placeAfter);
+    });
     row.querySelector('.notice-content-input').addEventListener('input', event=>{
       state.notices[i].content = event.target.value;
     });
@@ -1764,12 +1933,30 @@ function renderSchedule(){
 }
 
 /* ===================== OUTFIT ===================== */
+function openOutfitImage(outfit){
+  const image = safeNoticeImage(outfit.image);
+  if(!image) return;
+  document.getElementById('outfitImageModalTitle').textContent = outfit.name || '의상 이미지';
+  document.getElementById('outfitImageModalImage').src = image;
+  const modal = document.getElementById('outfitImageModal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeOutfitImage(){
+  const modal = document.getElementById('outfitImageModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+document.getElementById('outfitImageModalClose').addEventListener('click', closeOutfitImage);
+document.getElementById('outfitImageModal').addEventListener('click', event=>{
+  if(event.target===event.currentTarget) closeOutfitImage();
+});
 function renderOutfits(){
   const track = document.getElementById('outfitTrack');
   track.innerHTML='';
   state.outfits.forEach((o,i)=>{
     const c = document.createElement('div'); c.className='outfit-card'+(i===0?' active':'');
-    c.innerHTML = `<div class="outfit-swatch" data-i="${i}" style="${o.image ? '' : 'background:linear-gradient(135deg,var(--mint-pale),var(--sand));'}">
+    c.innerHTML = `<div class="outfit-swatch${o.image ? ' has-image' : ''}" data-i="${i}" ${o.image ? `data-outfit-image-index="${i}" role="button" tabindex="${editMode ? -1 : 0}" aria-label="${escapeHtml(o.name || '의상')} 이미지 크게 보기"` : ''} style="${o.image ? '' : 'background:linear-gradient(135deg,var(--mint-pale),var(--sand));'}">
         <span class="outfit-visual">${o.image ? `<img src="${o.image}" alt="">` : o.emoji}</span>
         <label class="outfit-upload-btn" title="이미지 업로드">📷<input type="file" accept="image/*" class="outfit-file-input" data-i="${i}" hidden></label>
       </div>
@@ -1787,18 +1974,44 @@ function renderOutfits(){
     if(!outfit) return;
     outfit[el.classList.contains('outfit-tag') ? 'tag' : 'name'] = el.textContent;
   }));
-  track.querySelectorAll('.outfit-file-input').forEach(input=>input.addEventListener('change', e=>{
+  track.querySelectorAll('[data-outfit-image-index]').forEach(swatch=>{
+    const openImage = ()=>{
+      if(!editMode) openOutfitImage(state.outfits[+swatch.dataset.outfitImageIndex]);
+    };
+    swatch.addEventListener('click', event=>{
+      if(event.target.closest('.outfit-upload-btn')) return;
+      openImage();
+    });
+    swatch.addEventListener('keydown', event=>{
+      if(!editMode && (event.key==='Enter' || event.key===' ')){
+        event.preventDefault();
+        openImage();
+      }
+    });
+  });
+  track.querySelectorAll('.outfit-file-input').forEach(input=>input.addEventListener('change', async e=>{
     const file = e.target.files[0];
     if(!file) return;
     const i = +input.dataset.i;
-    const reader = new FileReader();
-    reader.onload = ()=>{
-      state.outfits[i].image = reader.result;
+    const maxBytes = getOutfitImageBudget(i);
+    if(maxBytes < 70000){
+      showToast('❌ 저장 공간이 부족합니다. 기존 이미지를 삭제한 뒤 다시 시도해 주세요.');
+      input.value = '';
+      return;
+    }
+    try{
+      showToast('이미지 크기를 최적화하는 중입니다…');
+      state.outfits[i].image = await compressImageForFirestore(file, {maxSide:800, maxBytes});
       const swatch = input.closest('.outfit-swatch');
       swatch.style.background = '';
       swatch.querySelector('.outfit-visual').innerHTML = `<img src="${state.outfits[i].image}" alt="">`;
-    };
-    reader.readAsDataURL(file);
+      showToast('✅ 이미지가 최적화되었습니다. 저장을 눌러주세요.');
+    }catch(error){
+      console.error(error);
+      showToast(`❌ ${error.message}`);
+    }finally{
+      input.value = '';
+    }
   }));
 }
 document.getElementById('addOutfit').addEventListener('click', ()=>{
@@ -1839,6 +2052,7 @@ function renderSongs(){
     group.innerHTML = `<div class="song-artist-heading"><span class="song-artist-name">${escapeHtml(artist)}</span><span class="song-artist-count">${songs.length}곡</span></div>
       <div class="song-list">${songs.map(song=>{
         const language = SONG_LANGUAGES.includes(song.language) ? song.language : '한국어';
+        const link = safeNoticeLink(song.link);
         return `<article class="song-card">
           <button class="remove-btn" type="button" data-song-remove="${song.uid}" aria-label="노래 삭제">✕</button>
           <div>
@@ -1849,9 +2063,13 @@ function renderSongs(){
               <select class="song-language-select" data-song-language data-song-uid="${song.uid}" aria-label="언어 설정">${songLanguageOptions(language)}</select>
               <span class="song-difficulty"><span>난이도</span><span class="song-stars" aria-label="난이도 ${song.difficulty}점 / 5점">${songStars(song.difficulty)}</span></span>
             </div>
+            <a class="song-play-link${link ? ' has-link' : ''}" data-song-play="${song.uid}" href="${link || '#'}" target="_blank" rel="noopener noreferrer">▶ 재생</a>
           </div>
           <div class="song-note" contenteditable="false" data-song-field="note" data-song-uid="${song.uid}">${escapeHtml(song.note)}</div>
           <div class="song-edit-stars" aria-label="난이도 편집">${[1,2,3,4,5].map(level=>`<button class="song-star-control${level<=song.difficulty?' active':''}" type="button" data-song-difficulty="${level}" data-song-uid="${song.uid}" aria-label="난이도 ${level}점">★</button>`).join('')}</div>
+          <label class="song-link-editor">재생 링크
+            <input type="url" data-song-link data-song-uid="${song.uid}" value="${escapeHtml(song.link || '')}" placeholder="https://www.youtube.com/...">
+          </label>
         </article>`;
       }).join('')}</div>`;
     grid.appendChild(group);
@@ -1862,6 +2080,15 @@ function renderSongs(){
     if(song) song[el.dataset.songField] = el.textContent;
   }));
   grid.querySelectorAll('[data-song-field="artist"]').forEach(el=>el.addEventListener('blur', renderSongs));
+  grid.querySelectorAll('[data-song-link]').forEach(input=>input.addEventListener('input', ()=>{
+    const song = state.songs.find(item=>item.uid===+input.dataset.songUid);
+    if(!song) return;
+    song.link = input.value;
+    const safeLink = safeNoticeLink(song.link);
+    const playLink = input.closest('.song-card').querySelector('[data-song-play]');
+    playLink.href = safeLink || '#';
+    playLink.classList.toggle('has-link', Boolean(safeLink));
+  }));
   grid.querySelectorAll('[data-song-language]').forEach(select=>select.addEventListener('change', ()=>{
     const song = state.songs.find(item=>item.uid===+select.dataset.songUid);
     if(!song) return;
@@ -1889,141 +2116,101 @@ document.getElementById('songLanguageFilters').addEventListener('click', event=>
   renderSongs();
 });
 document.getElementById('addSong').addEventListener('click', ()=>{
-  state.songs.push({ uid:Date.now(), title:'새 노래 제목', artist:'가수 이름', language:'한국어', difficulty:3, note:'키업/키다운 등 부르기 메모를 입력하세요.' });
+  state.songs.push({ uid:Date.now(), title:'새 노래 제목', artist:'가수 이름', language:'한국어', difficulty:3, note:'키업/키다운 등 부르기 메모를 입력하세요.', link:'' });
   renderSongs();
 });
 
-document.getElementById("addEvent").addEventListener("click", ()=>{
-
-  state.events.push({
-    title: "새 이벤트",
-    date: new Date().toISOString().slice(0,10)
-  });
-
-  renderEvents();
-  renderEventPreview();
-
-});
-
 /* ===================== EVENTS ===================== */
+function getEventBaseDate(){
+  if(!isValidEventDate(state.eventBaseDate)) state.eventBaseDate = toLocalDateKey();
+  return state.eventBaseDate;
+}
+function getEventDday(baseDate, targetDate){
+  const base = new Date(`${baseDate}T00:00:00`);
+  const target = new Date(`${targetDate}T00:00:00`);
+  const difference = Math.round((target-base) / (1000*60*60*24));
+  if(difference>0) return `D-${difference}`;
+  if(difference===0) return 'D-Day';
+  return `D+${Math.abs(difference)}`;
+}
 function renderEvents(){
-  const manager = document.getElementById("eventManager");
-  manager.innerHTML = "";
-
-  state.events.forEach((event, index) => {
-
-    const row = document.createElement("div");
-    row.className = "schedule-editor-row";
-
-    row.innerHTML = `
-      <input type="text"
-             value="${event.title}"
-             placeholder="이벤트명">
-
-      <input type="date"
-             value="${event.date}">
-
-      <button class="schedule-delete">✕</button>
-    `;
-
-    const titleInput = row.children[0];
-    const dateInput = row.children[1];
-    const deleteBtn = row.children[2];
-
-    titleInput.addEventListener("input", ()=>{
+  const manager = document.getElementById('eventManager');
+  const baseDateInput = document.getElementById('eventBaseDate');
+  baseDateInput.value = getEventBaseDate();
+  baseDateInput.onchange = ()=>{
+    if(isValidEventDate(baseDateInput.value)){
+      state.eventBaseDate = baseDateInput.value;
+      renderEventPreview();
+    }
+  };
+  manager.innerHTML = '';
+  state.events.forEach((event, index)=>{
+    const row = document.createElement('div');
+    row.className = 'event-editor-row';
+    const eventDate = isValidEventDate(event.date) ? event.date : getEventBaseDate();
+    row.innerHTML = `<label>이벤트명
+        <input type="text" class="event-title-input" value="${escapeHtml(event.title || '')}" placeholder="이벤트명">
+      </label>
+      <label>해당 날짜
+        <input type="date" class="event-date-input" value="${eventDate}">
+      </label>
+      <button type="button" class="event-editor-delete" aria-label="이벤트 삭제">✕</button>`;
+    const titleInput = row.querySelector('.event-title-input');
+    const dateInput = row.querySelector('.event-date-input');
+    titleInput.addEventListener('input', ()=>{
       state.events[index].title = titleInput.value;
-     renderEventPreview();
+      renderEventPreview();
     });
-
-    dateInput.addEventListener("change", ()=>{
+    dateInput.addEventListener('change', ()=>{
       state.events[index].date = dateInput.value;
-    renderEventPreview();
+      renderEventPreview();
     });
-
-    deleteBtn.addEventListener("click", ()=>{
+    row.querySelector('.event-editor-delete').addEventListener('click', ()=>{
       state.events.splice(index,1);
       renderEvents();
       renderEventPreview();
     });
-
     manager.appendChild(row);
-
   });
 }
+document.getElementById('addEvent').addEventListener('click', ()=>{
+  state.events.push({
+    title:'새 이벤트',
+    date:getEventBaseDate()
+  });
+  renderEvents();
+  renderEventPreview();
+});
 function renderEventPreview(){
-
-  const list = document.getElementById("eventList");
-
-  if(state.events.length===0){
-    list.innerHTML="";
+  const list = document.getElementById('eventList');
+  const baseDate = getEventBaseDate();
+  const events = state.events
+    .filter(event=>isValidEventDate(event.date))
+    .sort((a,b)=>a.date.localeCompare(b.date));
+  if(!events.length){
+    list.innerHTML = '';
     return;
   }
-
-  const events=[...state.events].sort((a,b)=>a.date.localeCompare(b.date));
-
-  if(currentEvent>=events.length){
-    currentEvent=0;
-  }
-
-  const event=events[currentEvent];
-
-  const today=new Date();
-  const target=new Date(event.date);
-
-  const diff=Math.ceil((target-today)/(1000*60*60*24));
-
-  let dday;
-
-  if(diff>0){
-    dday=`D-${diff}`;
-  }else if(diff===0){
-    dday="D-Day";
-  }else{
-    dday=`D+${Math.abs(diff)}`;
-  }
-
-  list.innerHTML=`
-    <div class="event-card">
-
-      <button id="eventPrev">◀</button>
-
+  if(currentEvent>=events.length) currentEvent = 0;
+  const event = events[currentEvent];
+  const dday = getEventDday(baseDate, event.date);
+  list.innerHTML = `<div class="event-card">
+      <button id="eventPrev" type="button" aria-label="이전 이벤트">◀</button>
       <div class="event-center">
-        <div class="event-name">${event.title}</div>
+        <div class="event-name">${escapeHtml(event.title || '이벤트')}</div>
         <div class="event-dday">${dday}</div>
-        <div class="event-page">
-          ${events.map((_,i)=>i===currentEvent?"●":"○").join(" ")}
-        </div>
+        <div class="event-page">${events.map((_,i)=>i===currentEvent?'●':'○').join(' ')}</div>
       </div>
-
-      <button id="eventNext">▶</button>
-
-    </div>
-  `;
-
-  document.getElementById("eventPrev").onclick=()=>{
-
-    currentEvent--;
-
-    if(currentEvent<0){
-      currentEvent=events.length-1;
-    }
-
+      <button id="eventNext" type="button" aria-label="다음 이벤트">▶</button>
+    </div>`;
+  document.getElementById('eventPrev').onclick = ()=>{
+    currentEvent = currentEvent<=0 ? events.length-1 : currentEvent-1;
     renderEventPreview();
-
   };
-
-  document.getElementById("eventNext").onclick=()=>{
-
-    currentEvent++;
-
-    if(currentEvent>=events.length){
-      currentEvent=0;
-    }
-
+  document.getElementById('eventNext').onclick = ()=>{
+    currentEvent = currentEvent>=events.length-1 ? 0 : currentEvent+1;
     renderEventPreview();
-
   };
-
 }
 /* ===================== KARMA ===================== */
 function renderKarma(filter=''){
@@ -2129,6 +2316,9 @@ function applyEditMode(){
 
   document.querySelectorAll('.notice-item[data-notice-index]')
     .forEach(row=> row.tabIndex = editMode ? -1 : 0);
+
+  document.querySelectorAll('[data-outfit-image-index]')
+    .forEach(swatch=> swatch.tabIndex = editMode ? -1 : 0);
 
   document.querySelectorAll('.remove-btn')
     .forEach(b=> b.style.display = editMode ? 'inline-block' : 'none');
