@@ -456,8 +456,12 @@
   .schedule-detail-box .detail-date{ margin:0 0 18px; color:var(--ink-soft); font-family:'Space Mono',monospace; font-size:12px; }
   .schedule-detail-close{ position:absolute; top:14px; right:14px; width:30px; height:30px; border:0; border-radius:50%; background:var(--mint-pale); color:var(--mint-deep); cursor:pointer; font-size:20px; line-height:1; }
   .schedule-detail-list{ display:flex; flex-direction:column; gap:8px; }
-  .schedule-detail-item{ display:flex; align-items:center; gap:9px; padding:11px; border:1px solid var(--sand); border-radius:10px; background:#FCFAF5; font-size:14px; }
+  .schedule-detail-item{ display:flex; align-items:flex-start; gap:9px; padding:11px; border:1px solid var(--sand); border-radius:10px; background:#FCFAF5; font-size:14px; }
   .schedule-detail-category{ flex:0 0 auto; padding:4px 7px; border-radius:5px; background:var(--label-color); color:#fff; font-size:11px; font-weight:700; }
+  .schedule-detail-content{ min-width:0; flex:1; }
+  .schedule-detail-content strong{ display:block; line-height:1.45; }
+  .schedule-member-list{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+  .schedule-member-chip{ padding:3px 7px; border-radius:999px; background:var(--mint-pale); color:var(--mint-deep); font-size:11px; font-weight:700; }
   .schedule-detail-empty{ padding:22px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
 
   footer{ text-align:center; padding:26px 0 10px; font-size:12px; color:var(--ink-soft); }
@@ -1709,6 +1713,13 @@ function formatScheduleDetailDate(dateKey){
   const weekdays = ['\uC77C','\uC6D4','\uD654','\uC218','\uBAA9','\uAE08','\uD1A0'];
   return `${year}\uB144 ${month}\uC6D4 ${day}\uC77C (${weekdays[new Date(year,month-1,day).getDay()]})`;
 }
+function parseScheduleMembers(value){
+  const source = Array.isArray(value) ? value : String(value || '').split(',');
+  return [...new Set(source.map(member=>String(member).trim()).filter(Boolean))];
+}
+function scheduleMembersText(value){
+  return parseScheduleMembers(value).join(', ');
+}
 function closeScheduleDetail(){
   const detailModal = document.getElementById('scheduleDetailModal');
   detailModal.classList.remove('show');
@@ -1747,6 +1758,13 @@ function openScheduleEditor(dateKey){
           class="schedule-edit-title"
           data-id="${item.id}"
           value="${escapeHtml(item.title)}"
+        >
+
+        <input
+          class="schedule-edit-members"
+          data-id="${item.id}"
+          value="${escapeHtml(scheduleMembersText(item.members))}"
+          placeholder="멤버 추가 (쉼표로 구분)"
         >
 
         <button 
@@ -1790,6 +1808,7 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
 
     const category = row.querySelector('.schedule-edit-category').value;
     const title = row.querySelector('.schedule-edit-title').value.trim();
+    const members = parseScheduleMembers(row.querySelector('.schedule-edit-members').value);
 
     if(title){
 
@@ -1797,7 +1816,8 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
         id: Date.now() + Math.random(),
         date: dateKey,
         category: category,
-        title: title
+        title: title,
+        members: members
       });
 
     }
@@ -1836,6 +1856,12 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
       value="새 일정"
     >
 
+    <input
+      class="schedule-edit-members"
+      value=""
+      placeholder="멤버 추가 (쉼표로 구분)"
+    >
+
     <button class="schedule-edit-delete">
       ✕
     </button>
@@ -1858,7 +1884,9 @@ detailList.insertBefore(
   detailDate.textContent = formatScheduleDetailDate(dateKey);
   detailList.innerHTML = entries.length ? entries.map(item=>{
     const category = getScheduleCategory(item.category);
-    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><strong>${escapeHtml(item.title)}</strong></div>`;
+    const members = parseScheduleMembers(item.members);
+    const memberMarkup = members.length ? `<div class="schedule-member-list">${members.map(member=>`<span class="schedule-member-chip">${escapeHtml(member)}</span>`).join('')}</div>` : '';
+    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><div class="schedule-detail-content"><strong>${escapeHtml(item.title)}</strong>${memberMarkup}</div></div>`;
   }).join('') : '<div class="schedule-detail-empty">등록된 일정이 없습니다.</div>';
   detailModal.classList.add('show');
   detailModal.setAttribute('aria-hidden','false');
