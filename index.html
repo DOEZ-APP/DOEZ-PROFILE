@@ -226,15 +226,35 @@
 
   /* ---------- Notice ---------- */
   .notice-item{
-    display:flex; gap:10px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--sand);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--sand);
   }
   .notice-item:last-child{ border-bottom:none; }
+  .notice-body{ flex:1; min-width:0; }
+  body:not(.edit-mode) .notice-item.notice-clickable{ cursor:pointer; border-radius:10px; transition:background .15s ease, transform .15s ease; }
+  body:not(.edit-mode) .notice-item.notice-clickable:hover{ background:var(--mint-pale); transform:translateX(2px); }
+  body:not(.edit-mode) .notice-item.notice-clickable:focus-visible{ outline:2px solid var(--mint-deep); outline-offset:3px; }
   .notice-badge{
     flex:0 0 auto; background:var(--peach-deep); color:#fff; font-size:11px; font-weight:700;
     padding:4px 8px; border-radius:6px;
   }
   .notice-body .title{ font-size:14px; font-weight:700; }
   .notice-body .date{ font-size:11px; color:var(--ink-soft); font-family:'Space Mono',monospace; margin-top:2px; }
+  .notice-editor{ display:none; flex:0 0 100%; gap:8px; width:100%; padding:10px; border:1px dashed var(--peach-deep); border-radius:10px; background:#FFF9F6; }
+  body.edit-mode .notice-editor{ display:grid; }
+  .notice-editor label{ color:var(--ink-soft); font-size:12px; font-weight:700; }
+  .notice-editor textarea, .notice-editor input[type="url"]{ width:100%; min-height:38px; padding:8px 10px; border:1px solid var(--sand); border-radius:8px; background:var(--paper); color:var(--ink); font:inherit; font-size:13px; }
+  .notice-editor textarea{ min-height:92px; resize:vertical; }
+  .notice-editor input[type="file"]{ display:block; width:100%; margin-top:5px; color:var(--ink-soft); font:inherit; font-size:12px; }
+  .notice-image-actions{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .notice-image-status{ color:var(--mint-deep); font-size:12px; }
+  .notice-image-remove{ border:0; border-radius:7px; padding:5px 8px; background:#F7E9E4; color:#C0574A; cursor:pointer; font:inherit; font-size:12px; }
+  .modal-box.notice-detail-box{ width:600px; max-height:82vh; overflow-y:auto; }
+  .notice-detail-box h3{ margin:0 34px 8px 0; color:var(--mint-deep); font-size:24px; }
+  .notice-detail-date{ margin:0 0 16px; color:var(--ink-soft); font-family:'Space Mono',monospace; font-size:12px; }
+  .notice-detail-content{ margin:0; color:var(--ink); font-size:14px; line-height:1.75; white-space:pre-wrap; }
+  .notice-detail-image{ display:block; width:100%; max-height:360px; margin-top:16px; border:1px solid var(--sand); border-radius:12px; object-fit:contain; background:var(--cream); }
+  .notice-detail-link{ display:inline-flex; align-items:center; justify-content:center; margin-top:18px; padding:10px 15px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:13px; font-weight:700; }
+  .notice-detail-link:hover{ filter:brightness(1.08); }
 
   /* ---------- Monthly calendar ---------- */
   .month-calendar{ border:1px solid var(--sand); border-radius:14px; overflow:hidden; background:var(--paper); }
@@ -1179,6 +1199,18 @@
   </div>
 </div>
 
+<!-- ================= NOTICE DETAIL MODAL ================= -->
+<div class="modal" id="noticeDetailModal" aria-hidden="true">
+  <div class="modal-box notice-detail-box" role="dialog" aria-modal="true" aria-labelledby="noticeDetailTitle">
+    <button class="modal-close" type="button" id="noticeDetailClose" aria-label="닫기">×</button>
+    <h3 id="noticeDetailTitle"></h3>
+    <p class="notice-detail-date" id="noticeDetailDate"></p>
+    <p class="notice-detail-content" id="noticeDetailContent"></p>
+    <img class="notice-detail-image" id="noticeDetailImage" alt="공지 이미지" hidden>
+    <a class="notice-detail-link" id="noticeDetailLink" target="_blank" rel="noopener noreferrer" hidden>링크로 이동 ↗</a>
+  </div>
+</div>
+
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
@@ -1303,16 +1335,94 @@ document.getElementById('tabs').addEventListener('click', (e)=>{
 
 
 /* ===================== NOTICE ===================== */
+function safeNoticeLink(value){
+  const link = String(value || '').trim();
+  if(!link) return '';
+  try{
+    const url = new URL(/^[a-z][a-z0-9+.-]*:/i.test(link) ? link : `https://${link}`);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  }catch(error){
+    return '';
+  }
+}
+function safeNoticeImage(value){
+  const image = String(value || '').trim();
+  return /^(data:image\/(png|jpe?g|gif|webp);base64,|https?:\/\/)/i.test(image) ? image : '';
+}
+function openNoticeDetail(notice){
+  const modal = document.getElementById('noticeDetailModal');
+  const image = safeNoticeImage(notice.image);
+  const link = safeNoticeLink(notice.link);
+  document.getElementById('noticeDetailTitle').textContent = notice.title || '공지사항';
+  document.getElementById('noticeDetailDate').textContent = notice.date || '';
+  document.getElementById('noticeDetailContent').textContent = notice.content || '등록된 상세 내용이 없습니다.';
+  const imageElement = document.getElementById('noticeDetailImage');
+  imageElement.hidden = !image;
+  imageElement.src = image || '';
+  const linkElement = document.getElementById('noticeDetailLink');
+  linkElement.hidden = !link;
+  linkElement.href = link || '#';
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeNoticeDetail(){
+  const modal = document.getElementById('noticeDetailModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+function compressNoticeImage(file){
+  if(!file || !file.type.startsWith('image/')) return Promise.reject(new Error('이미지 파일만 올릴 수 있습니다.'));
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onerror = ()=>reject(new Error('이미지 파일을 읽지 못했습니다.'));
+    reader.onload = ()=>{
+      const image = new Image();
+      image.onerror = ()=>reject(new Error('이미지를 처리하지 못했습니다.'));
+      image.onload = ()=>{
+        const maxSide = 1200;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+        const result = canvas.toDataURL('image/jpeg', .76);
+        if(result.length > 700000){
+          reject(new Error('이미지가 너무 큽니다. 더 작은 이미지를 선택해 주세요.'));
+          return;
+        }
+        resolve(result);
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById('noticeDetailClose').addEventListener('click', closeNoticeDetail);
+document.getElementById('noticeDetailModal').addEventListener('click', event=>{
+  if(event.target===event.currentTarget) closeNoticeDetail();
+});
 function renderNotices(){
   const list = document.getElementById('noticeList');
   const preview = document.getElementById('noticePreview');
   list.innerHTML=''; preview.innerHTML='';
   state.notices.forEach((n,i)=>{
-    const row = document.createElement('div'); row.className='notice-item';
-    row.innerHTML = `<span class="notice-badge">${n.badge}</span>
+    const row = document.createElement('div'); row.className='notice-item notice-clickable';
+    row.dataset.noticeIndex = i;
+    row.setAttribute('role','button');
+    row.tabIndex = editMode ? -1 : 0;
+    row.innerHTML = `<span class="notice-badge">${escapeHtml(n.badge || '공지')}</span>
       <div class="notice-body">
-        <div class="title" contenteditable="false">${n.title}</div>
-        <div class="date">${n.date}</div>
+        <div class="title" contenteditable="false">${escapeHtml(n.title || '')}</div>
+        <div class="date">${escapeHtml(n.date || '')}</div>
+      </div>
+      <div class="notice-editor">
+        <label>공지 내용<textarea class="notice-content-input" placeholder="공지 상세 내용을 입력하세요.">${escapeHtml(n.content || '')}</textarea></label>
+        <label>링크 삽입<input type="url" class="notice-link-input" value="${escapeHtml(n.link || '')}" placeholder="https://example.com"></label>
+        <label>이미지 삽입<input type="file" class="notice-image-input" accept="image/png,image/jpeg,image/gif,image/webp"></label>
+        <div class="notice-image-actions">
+          <span class="notice-image-status">${n.image ? '이미지가 등록되었습니다.' : '등록된 이미지가 없습니다.'}</span>
+          ${n.image ? '<button type="button" class="notice-image-remove">이미지 삭제</button>' : ''}
+        </div>
       </div>
       <button class="remove-btn" data-i="${i}">✕</button>`;
 
@@ -1321,12 +1431,68 @@ const title = row.querySelector(".title");
 title.addEventListener("input", () => {
   state.notices[i].title = title.textContent.trim();
 });
+    row.querySelector('.notice-content-input').addEventListener('input', event=>{
+      state.notices[i].content = event.target.value;
+    });
+    row.querySelector('.notice-link-input').addEventListener('input', event=>{
+      state.notices[i].link = event.target.value;
+    });
+    row.querySelector('.notice-image-input').addEventListener('change', async event=>{
+      const file = event.target.files[0];
+      if(!file) return;
+      try{
+        state.notices[i].image = await compressNoticeImage(file);
+        row.querySelector('.notice-image-status').textContent = '이미지가 등록되었습니다.';
+        if(!row.querySelector('.notice-image-remove')){
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.className = 'notice-image-remove';
+          remove.textContent = '이미지 삭제';
+          remove.addEventListener('click', ()=>{
+            state.notices[i].image = '';
+            renderNotices();
+            applyEditMode();
+          });
+          row.querySelector('.notice-image-actions').appendChild(remove);
+        }
+      }catch(error){
+        showToast(`❌ ${error.message}`);
+      }finally{
+        event.target.value = '';
+      }
+    });
+    row.querySelector('.notice-image-remove')?.addEventListener('click', ()=>{
+      state.notices[i].image = '';
+      renderNotices();
+      applyEditMode();
+    });
+    const showNotice = ()=>{
+      if(!editMode) openNoticeDetail(state.notices[i]);
+    };
+    row.addEventListener('click', event=>{
+      if(event.target.closest('button, input, textarea, label')) return;
+      showNotice();
+    });
+    row.addEventListener('keydown', event=>{
+      if(!editMode && (event.key==='Enter' || event.key===' ')){
+        event.preventDefault();
+        showNotice();
+      }
+    });
     list.appendChild(row);
   });
   state.notices.slice(0,2).forEach(n=>{
-    const row = document.createElement('div'); row.className='notice-item';
-    row.innerHTML = `<span class="notice-badge">${n.badge}</span>
-      <div class="notice-body"><div class="title">${n.title}</div><div class="date">${n.date}</div></div>`;
+    const noticeIndex = state.notices.indexOf(n);
+    const row = document.createElement('div'); row.className='notice-item notice-clickable';
+    row.setAttribute('role','button');
+    row.tabIndex = 0;
+    row.innerHTML = `<span class="notice-badge">${escapeHtml(n.badge || '공지')}</span>
+      <div class="notice-body"><div class="title">${escapeHtml(n.title || '')}</div><div class="date">${escapeHtml(n.date || '')}</div></div>`;
+    const showNotice = ()=>openNoticeDetail(state.notices[noticeIndex]);
+    row.addEventListener('click', showNotice);
+    row.addEventListener('keydown', event=>{
+      if(event.key==='Enter' || event.key===' '){ event.preventDefault(); showNotice(); }
+    });
     preview.appendChild(row);
   });
   list.querySelectorAll('.remove-btn').forEach(b=>b.addEventListener('click', ()=>{
@@ -1336,6 +1502,10 @@ title.addEventListener("input", () => {
 }
 document.getElementById('addNotice').addEventListener('click', ()=>{
   state.notices.unshift({badge:'안내', title:'새 공지 제목을 입력하세요', date:new Date().toISOString().slice(0,10).replaceAll('-','.')});
+  const newNotice = state.notices[0];
+  newNotice.content = '';
+  newNotice.link = '';
+  newNotice.image = '';
   renderNotices(); applyEditMode();
 });
 
@@ -1956,6 +2126,9 @@ function applyEditMode(){
 
   document.querySelectorAll('.notice-item .title, .day-card .day-body')
     .forEach(el=> el.contentEditable = editMode);
+
+  document.querySelectorAll('.notice-item[data-notice-index]')
+    .forEach(row=> row.tabIndex = editMode ? -1 : 0);
 
   document.querySelectorAll('.remove-btn')
     .forEach(b=> b.style.display = editMode ? 'inline-block' : 'none');
