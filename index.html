@@ -1654,7 +1654,7 @@ title.addEventListener("input", () => {
     });
     list.appendChild(row);
   });
-  state.notices.slice(0,2).forEach(n=>{
+  state.notices.slice(0,5).forEach(n=>{
     const noticeIndex = state.notices.indexOf(n);
     const row = document.createElement('div'); row.className='notice-item notice-clickable';
     row.setAttribute('role','button');
