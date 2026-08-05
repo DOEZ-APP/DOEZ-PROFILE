@@ -462,6 +462,7 @@
   .schedule-detail-content strong{ display:block; line-height:1.45; }
   .schedule-member-list{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
   .schedule-member-chip{ padding:3px 7px; border-radius:999px; background:var(--mint-pale); color:var(--mint-deep); font-size:11px; font-weight:700; }
+  .schedule-part-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--peach-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; }
   .schedule-detail-empty{ padding:22px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
 
   footer{ text-align:center; padding:26px 0 10px; font-size:12px; color:var(--ink-soft); }
@@ -565,17 +566,7 @@
     border-top:1px dashed var(--sand);
 }
 body.edit-mode #eventEditor{ display:block; }
-.event-base-date{
-    display:flex;
-    align-items:end;
-    gap:12px;
-    margin-bottom:12px;
-    padding:12px;
-    border-radius:12px;
-    background:var(--mint-pale);
-}
-.event-base-date label{ display:grid; gap:5px; color:var(--mint-deep); font-size:12px; font-weight:700; }
-.event-base-date input, .event-editor-row input{
+.event-editor-row input{
     min-height:36px;
     border:1px solid var(--sand);
     border-radius:8px;
@@ -585,7 +576,7 @@ body.edit-mode #eventEditor{ display:block; }
     font-size:13px;
     padding:7px 9px;
 }
-.event-base-date .hint{ margin:0 0 3px; color:var(--ink-soft); font-size:11px; line-height:1.45; }
+#eventEditor > .hint{ margin:0 0 12px; color:var(--ink-soft); font-size:11px; line-height:1.45; }
 .event-editor-row{
     display:grid;
     grid-template-columns:minmax(0,1fr) 145px 34px;
@@ -601,7 +592,6 @@ body.edit-mode #eventEditor{ display:block; }
 .event-editor-row input{ width:100%; }
 .event-editor-delete{ width:30px; height:30px; border:0; border-radius:7px; background:#F7E9E4; color:#C0574A; cursor:pointer; font-size:16px; }
 @media(max-width:520px){
-    .event-base-date{ align-items:stretch; flex-direction:column; gap:7px; }
     .event-editor-row{ grid-template-columns:minmax(0,1fr) 34px; }
     .event-editor-row label:first-child{ grid-column:1 / -1; }
 }
@@ -993,6 +983,45 @@ body.edit-mode #eventEditor{ display:block; }
     gap:10px;
     margin-bottom:15px;
 }
+.schedule-part-toggle{ display:flex; gap:6px; }
+.schedule-part-btn{
+    flex:1;
+    padding:8px 0;
+    border:1px solid var(--sand);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink-soft);
+    font-family:'Gowun Dodum',sans-serif;
+    font-size:12px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+}
+.schedule-part-btn.active{
+    background:var(--mint-deep);
+    border-color:var(--mint-deep);
+    color:#fff;
+}
+.schedule-drag-handle{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    width:100%;
+    padding:6px 8px;
+    border:1px dashed var(--sand);
+    border-radius:8px;
+    background:#FCFAF5;
+    color:var(--ink-soft);
+    font-family:'Gowun Dodum',sans-serif;
+    font-size:11px;
+    font-weight:700;
+    cursor:grab;
+}
+.schedule-drag-handle:active{ cursor:grabbing; }
+.schedule-edit-row.is-dragging{ opacity:.45; }
+.schedule-edit-row.is-drag-over-top{ box-shadow:inset 0 3px 0 var(--mint-deep); }
+.schedule-edit-row.is-drag-over-bottom{ box-shadow:inset 0 -3px 0 var(--mint-deep); }
 </style>
 </head>
 <body>
@@ -1100,12 +1129,7 @@ body.edit-mode #eventEditor{ display:block; }
   <div id="eventList"></div>
 
 <div id="eventEditor">
-  <div class="event-base-date">
-    <label>기준 날짜 (D-day 계산 기준)
-      <input type="date" id="eventBaseDate">
-    </label>
-    <p class="hint">일반 모드에서는 이벤트 이름과 D-day만 표시됩니다.</p>
-  </div>
+  <p class="hint">D-day는 매일 자동으로 '오늘' 날짜 기준으로 계산돼요. 일반 모드에서는 이벤트 이름과 D-day만 표시됩니다.</p>
 <div id="eventManager"></div>
 
   <button class="add-btn" id="addEvent">
@@ -1407,7 +1431,6 @@ fanNick: "°ezOOO",
   ],
   events: [
   ],
-eventBaseDate: toLocalDateKey(),
 ups:[],
 upList:[]
 };
@@ -1725,6 +1748,44 @@ function closeScheduleDetail(){
   detailModal.classList.remove('show');
   detailModal.setAttribute('aria-hidden','true');
 }
+let draggedScheduleRow = null;
+function clearScheduleDropIndicators(){
+  document.querySelectorAll('.schedule-edit-row.is-drag-over-top, .schedule-edit-row.is-drag-over-bottom')
+    .forEach(row=>row.classList.remove('is-drag-over-top','is-drag-over-bottom'));
+}
+function attachScheduleRowDragEvents(row){
+  const handle = row.querySelector('.schedule-drag-handle');
+  handle.addEventListener('dragstart', event=>{
+    draggedScheduleRow = row;
+    row.classList.add('is-dragging');
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/plain', '');
+  });
+  handle.addEventListener('dragend', ()=>{
+    draggedScheduleRow = null;
+    row.classList.remove('is-dragging');
+    clearScheduleDropIndicators();
+  });
+  row.addEventListener('dragover', event=>{
+    if(!draggedScheduleRow || draggedScheduleRow===row) return;
+    event.preventDefault();
+    clearScheduleDropIndicators();
+    const placeAfter = event.clientY > row.getBoundingClientRect().top + row.offsetHeight/2;
+    row.classList.add(placeAfter ? 'is-drag-over-bottom' : 'is-drag-over-top');
+    event.dataTransfer.dropEffect = 'move';
+  });
+  row.addEventListener('dragleave', event=>{
+    if(!row.contains(event.relatedTarget)) row.classList.remove('is-drag-over-top','is-drag-over-bottom');
+  });
+  row.addEventListener('drop', event=>{
+    if(!draggedScheduleRow || draggedScheduleRow===row) return;
+    event.preventDefault();
+    const placeAfter = event.clientY > row.getBoundingClientRect().top + row.offsetHeight/2;
+    clearScheduleDropIndicators();
+    if(placeAfter){ row.after(draggedScheduleRow); } else { row.before(draggedScheduleRow); }
+    draggedScheduleRow = null;
+  });
+}
 function openScheduleDetail(dateKey){
 if(editMode){
   openScheduleEditor(dateKey);
@@ -1749,6 +1810,7 @@ function openScheduleEditor(dateKey){
 
       return `
 <div class="schedule-edit-row" data-id="${item.id}">
+        <button type="button" class="schedule-drag-handle" draggable="true" aria-label="일정 순서 변경" title="드래그하여 순서 변경">⠿ 드래그로 순서 변경</button>
         <select class="schedule-edit-category"
           data-id="${item.id}">
           ${categoryOptions(item.category)}
@@ -1766,6 +1828,11 @@ function openScheduleEditor(dateKey){
           value="${escapeHtml(scheduleMembersText(item.members))}"
           placeholder="멤버 추가 (쉼표로 구분)"
         >
+
+        <div class="schedule-part-toggle" data-id="${item.id}">
+          <button type="button" class="schedule-part-btn${item.part==='1부' ? ' active' : ''}" data-part="1부">1부</button>
+          <button type="button" class="schedule-part-btn${item.part==='2부' ? ' active' : ''}" data-part="2부">2부</button>
+        </div>
 
         <button 
           class="schedule-edit-delete"
@@ -1800,6 +1867,9 @@ detailList.querySelectorAll('.schedule-edit-delete').forEach(button=>{
   };
 
 });
+detailList.querySelectorAll('.schedule-edit-row').forEach(row=>{
+  attachScheduleRowDragEvents(row);
+});
 document.getElementById('scheduleSaveInModal').onclick = async ()=>{
 
   const newList = [];
@@ -1809,6 +1879,8 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
     const category = row.querySelector('.schedule-edit-category').value;
     const title = row.querySelector('.schedule-edit-title').value.trim();
     const members = parseScheduleMembers(row.querySelector('.schedule-edit-members').value);
+    const activePartBtn = row.querySelector('.schedule-part-btn.active');
+    const part = activePartBtn ? activePartBtn.dataset.part : '';
 
     if(title){
 
@@ -1817,7 +1889,8 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
         date: dateKey,
         category: category,
         title: title,
-        members: members
+        members: members,
+        part: part
       });
 
     }
@@ -1847,6 +1920,7 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
   row.className = 'schedule-edit-row';
 
   row.innerHTML = `
+    <button type="button" class="schedule-drag-handle" draggable="true" aria-label="일정 순서 변경" title="드래그하여 순서 변경">⠿ 드래그로 순서 변경</button>
     <select class="schedule-edit-category">
       ${categoryOptions('소통')}
     </select>
@@ -1862,6 +1936,11 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
       placeholder="멤버 추가 (쉼표로 구분)"
     >
 
+    <div class="schedule-part-toggle">
+      <button type="button" class="schedule-part-btn" data-part="1부">1부</button>
+      <button type="button" class="schedule-part-btn" data-part="2부">2부</button>
+    </div>
+
     <button class="schedule-edit-delete">
       ✕
     </button>
@@ -1869,6 +1948,7 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
 row.querySelector('.schedule-edit-delete').onclick = ()=>{
   row.remove();
 };
+attachScheduleRowDragEvents(row);
 
 detailList.insertBefore(
   row,
@@ -1886,7 +1966,8 @@ detailList.insertBefore(
     const category = getScheduleCategory(item.category);
     const members = parseScheduleMembers(item.members);
     const memberMarkup = members.length ? `<div class="schedule-member-list">${members.map(member=>`<span class="schedule-member-chip">${escapeHtml(member)}</span>`).join('')}</div>` : '';
-    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><div class="schedule-detail-content"><strong>${escapeHtml(item.title)}</strong>${memberMarkup}</div></div>`;
+    const partMarkup = item.part ? `<span class="schedule-part-badge">${escapeHtml(item.part)}</span>` : '';
+    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><div class="schedule-detail-content"><strong>${escapeHtml(item.title)}${partMarkup}</strong>${memberMarkup}</div></div>`;
   }).join('') : '<div class="schedule-detail-empty">등록된 일정이 없습니다.</div>';
   detailModal.classList.add('show');
   detailModal.setAttribute('aria-hidden','false');
@@ -1894,6 +1975,14 @@ detailList.insertBefore(
 document.getElementById('scheduleDetailClose').addEventListener('click', closeScheduleDetail);
 document.getElementById('scheduleDetailModal').addEventListener('click', event=>{
   if(event.target===event.currentTarget) closeScheduleDetail();
+});
+document.getElementById('scheduleDetailList').addEventListener('click', event=>{
+  const button = event.target.closest('.schedule-part-btn');
+  if(!button) return;
+  const group = button.closest('.schedule-part-toggle');
+  const wasActive = button.classList.contains('active');
+  group.querySelectorAll('.schedule-part-btn').forEach(b=>b.classList.remove('active'));
+  if(!wasActive) button.classList.add('active');
 });
 function updateCalendarViews(){
   renderCalendar(document.getElementById('scheduleList'));
@@ -2150,8 +2239,7 @@ document.getElementById('addSong').addEventListener('click', ()=>{
 
 /* ===================== EVENTS ===================== */
 function getEventBaseDate(){
-  if(!isValidEventDate(state.eventBaseDate)) state.eventBaseDate = toLocalDateKey();
-  return state.eventBaseDate;
+  return toLocalDateKey();
 }
 function getEventDday(baseDate, targetDate){
   const base = new Date(`${baseDate}T00:00:00`);
@@ -2163,14 +2251,6 @@ function getEventDday(baseDate, targetDate){
 }
 function renderEvents(){
   const manager = document.getElementById('eventManager');
-  const baseDateInput = document.getElementById('eventBaseDate');
-  baseDateInput.value = getEventBaseDate();
-  baseDateInput.onchange = ()=>{
-    if(isValidEventDate(baseDateInput.value)){
-      state.eventBaseDate = baseDateInput.value;
-      renderEventPreview();
-    }
-  };
   manager.innerHTML = '';
   state.events.forEach((event, index)=>{
     const row = document.createElement('div');
