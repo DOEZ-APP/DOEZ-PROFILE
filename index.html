@@ -463,6 +463,7 @@
   .schedule-member-list{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
   .schedule-member-chip{ padding:3px 7px; border-radius:999px; background:var(--mint-pale); color:var(--mint-deep); font-size:11px; font-weight:700; }
   .schedule-part-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--peach-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; }
+  .schedule-time-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; font-family:'Space Mono',monospace; }
   .schedule-detail-empty{ padding:22px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
 
   footer{ text-align:center; padding:26px 0 10px; font-size:12px; color:var(--ink-soft); }
@@ -1002,6 +1003,61 @@ body.edit-mode #eventEditor{ display:block; }
     transition:background .15s ease, color .15s ease, border-color .15s ease;
 }
 .schedule-part-btn.active{
+    background:var(--mint-deep);
+    border-color:var(--mint-deep);
+    color:#fff;
+}
+.schedule-edit-toprow{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    align-items:center;
+}
+.schedule-edit-time{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+.schedule-edit-hour, .schedule-edit-minute{
+    width:52px;
+    height:34px;
+    padding:0 22px 0 8px;
+
+    border:1px solid #eadfc8;
+    border-radius:10px;
+
+    background:#fffaf0;
+
+    font-size:13px;
+    color:#5b4a35;
+    font-family:'Space Mono',monospace;
+
+    appearance:none;
+
+    background-image:
+    linear-gradient(45deg, transparent 50%, #8b6b2d 50%),
+    linear-gradient(135deg, #8b6b2d 50%, transparent 50%);
+    background-position:
+    calc(100% - 12px) 14px,
+    calc(100% - 7px) 14px;
+    background-size:4px 4px;
+    background-repeat:no-repeat;
+}
+.schedule-edit-time-sep{ color:var(--ink-soft); font-weight:700; font-family:'Space Mono',monospace; }
+.schedule-ampm-toggle{ display:flex; gap:4px; }
+.schedule-ampm-btn{
+    padding:8px 10px;
+    border:1px solid var(--sand);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink-soft);
+    font-family:'Space Mono',monospace;
+    font-size:11px;
+    font-weight:700;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
+}
+.schedule-ampm-btn.active{
     background:var(--mint-deep);
     border-color:var(--mint-deep);
     color:#fff;
@@ -1736,6 +1792,29 @@ function getScheduleCategory(name){
 function categoryOptions(selected){
   return SCHEDULE_CATEGORIES.map(category=>`<option value="${category.name}"${category.name===selected?' selected':''}>${category.name}</option>`).join('');
 }
+function hourOptions(selected){
+  const sel = Number(selected) || 12;
+  let out = '';
+  for(let h=1; h<=12; h++){
+    out += `<option value="${h}"${h===sel ? ' selected' : ''}>${h}</option>`;
+  }
+  return out;
+}
+function minuteOptions(selected){
+  const sel = (selected===undefined || selected===null || selected==='') ? '00' : String(selected).padStart(2,'0');
+  let out = '';
+  for(let m=0; m<60; m+=5){
+    const mm = String(m).padStart(2,'0');
+    out += `<option value="${mm}"${mm===sel ? ' selected' : ''}>${mm}</option>`;
+  }
+  return out;
+}
+function formatScheduleTime(item){
+  if(!item.ampm) return '';
+  const hour = item.hour || '12';
+  const minute = item.minute || '00';
+  return `${hour}:${minute} ${item.ampm}`;
+}
 function formatScheduleDetailDate(dateKey){
   const [year,month,day] = dateKey.split('-').map(Number);
   const weekdays = ['\uC77C','\uC6D4','\uD654','\uC218','\uBAA9','\uAE08','\uD1A0'];
@@ -1816,10 +1895,21 @@ function openScheduleEditor(dateKey){
       return `
 <div class="schedule-edit-row" data-id="${item.id}">
         <button type="button" class="schedule-drag-handle" draggable="true" aria-label="일정 순서 변경" title="드래그하여 순서 변경">⠿ 드래그로 순서 변경</button>
-        <select class="schedule-edit-category"
-          data-id="${item.id}">
-          ${categoryOptions(item.category)}
-        </select>
+        <div class="schedule-edit-toprow">
+          <select class="schedule-edit-category"
+            data-id="${item.id}">
+            ${categoryOptions(item.category)}
+          </select>
+          <div class="schedule-edit-time" data-id="${item.id}">
+            <select class="schedule-edit-hour" data-id="${item.id}">${hourOptions(item.hour)}</select>
+            <span class="schedule-edit-time-sep">:</span>
+            <select class="schedule-edit-minute" data-id="${item.id}">${minuteOptions(item.minute)}</select>
+            <div class="schedule-ampm-toggle" data-id="${item.id}">
+              <button type="button" class="schedule-ampm-btn${item.ampm==='AM' ? ' active' : ''}" data-ampm="AM">AM</button>
+              <button type="button" class="schedule-ampm-btn${item.ampm==='PM' ? ' active' : ''}" data-ampm="PM">PM</button>
+            </div>
+          </div>
+        </div>
 
         <input 
           class="schedule-edit-title"
@@ -1886,6 +1976,10 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
     const members = parseScheduleMembers(row.querySelector('.schedule-edit-members').value);
     const activePartBtn = row.querySelector('.schedule-part-btn.active');
     const part = activePartBtn ? activePartBtn.dataset.part : '';
+    const activeAmpmBtn = row.querySelector('.schedule-ampm-btn.active');
+    const ampm = activeAmpmBtn ? activeAmpmBtn.dataset.ampm : '';
+    const hour = row.querySelector('.schedule-edit-hour').value;
+    const minute = row.querySelector('.schedule-edit-minute').value;
 
     if(title){
 
@@ -1895,7 +1989,10 @@ document.getElementById('scheduleSaveInModal').onclick = async ()=>{
         category: category,
         title: title,
         members: members,
-        part: part
+        part: part,
+        hour: hour,
+        minute: minute,
+        ampm: ampm
       });
 
     }
@@ -1926,9 +2023,20 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
 
   row.innerHTML = `
     <button type="button" class="schedule-drag-handle" draggable="true" aria-label="일정 순서 변경" title="드래그하여 순서 변경">⠿ 드래그로 순서 변경</button>
-    <select class="schedule-edit-category">
-      ${categoryOptions('소통')}
-    </select>
+    <div class="schedule-edit-toprow">
+      <select class="schedule-edit-category">
+        ${categoryOptions('소통')}
+      </select>
+      <div class="schedule-edit-time">
+        <select class="schedule-edit-hour">${hourOptions()}</select>
+        <span class="schedule-edit-time-sep">:</span>
+        <select class="schedule-edit-minute">${minuteOptions()}</select>
+        <div class="schedule-ampm-toggle">
+          <button type="button" class="schedule-ampm-btn" data-ampm="AM">AM</button>
+          <button type="button" class="schedule-ampm-btn" data-ampm="PM">PM</button>
+        </div>
+      </div>
+    </div>
 
     <input 
       class="schedule-edit-title"
@@ -1972,7 +2080,8 @@ detailList.insertBefore(
     const members = parseScheduleMembers(item.members);
     const memberMarkup = members.length ? `<div class="schedule-member-list">${members.map(member=>`<span class="schedule-member-chip">${escapeHtml(member)}</span>`).join('')}</div>` : '';
     const partMarkup = item.part ? `<span class="schedule-part-badge">${escapeHtml(item.part)}</span>` : '';
-    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><div class="schedule-detail-content"><strong>${escapeHtml(item.title)}${partMarkup}</strong>${memberMarkup}</div></div>`;
+    const timeMarkup = item.ampm ? `<span class="schedule-time-badge">${escapeHtml(formatScheduleTime(item))}</span>` : '';
+    return `<div class="schedule-detail-item"><span class="schedule-detail-category" style="--label-color:${category.color}">${escapeHtml(category.name)}</span><div class="schedule-detail-content"><strong>${escapeHtml(item.title)}${partMarkup}${timeMarkup}</strong>${memberMarkup}</div></div>`;
   }).join('') : '<div class="schedule-detail-empty">등록된 일정이 없습니다.</div>';
   detailModal.classList.add('show');
   detailModal.setAttribute('aria-hidden','false');
@@ -1987,6 +2096,14 @@ document.getElementById('scheduleDetailList').addEventListener('click', event=>{
   const group = button.closest('.schedule-part-toggle');
   const wasActive = button.classList.contains('active');
   group.querySelectorAll('.schedule-part-btn').forEach(b=>b.classList.remove('active'));
+  if(!wasActive) button.classList.add('active');
+});
+document.getElementById('scheduleDetailList').addEventListener('click', event=>{
+  const button = event.target.closest('.schedule-ampm-btn');
+  if(!button) return;
+  const group = button.closest('.schedule-ampm-toggle');
+  const wasActive = button.classList.contains('active');
+  group.querySelectorAll('.schedule-ampm-btn').forEach(b=>b.classList.remove('active'));
   if(!wasActive) button.classList.add('active');
 });
 function updateCalendarViews(){
