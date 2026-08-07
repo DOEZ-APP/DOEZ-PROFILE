@@ -1208,8 +1208,8 @@ body.edit-mode #eventEditor{ display:block; }
       <div class="info-tile">
         <div class="k">방송 시간</div>
         <div class="v" contenteditable="false" data-field="broadcastTime">
-🌙 평일 오후 7시<br>
-☀️ 주말 오후 3시        </div>
+☀️ [1부] : 평균 오전 11시 ~ 12시 방송 ON<br>
+🌙 [2부] : 평균 오후 6시 ~ 7시 방송 ON        </div>
       </div>
 </div>
   </div>
@@ -1218,14 +1218,14 @@ body.edit-mode #eventEditor{ display:block; }
 
     <div class="tile-row">
       <div class="info-tile">
-        <div class="k">메인 콘텐츠</div>
+        <div class="k">이지의 주 컨텐츠</div>
         <div class="v" contenteditable="false" data-field="broadcastMain">
           게임 · 소통
         </div>
       </div>
 
       <div class="info-tile">
-        <div class="k">캐릭터 포인트</div>
+        <div class="k">이지의 아바타 포인트</div>
         <div class="v" contenteditable="false" data-field="broadcastGame">
           노란색 · 공룡
         </div>
@@ -1386,7 +1386,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebas
 import {
   getAuth,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-auth.js";
 
 import {
@@ -1409,6 +1410,14 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    editMode = true;
+    applyEditMode();
+    showToast('관리자 모드로 자동 로그인됨');
+  }
+});
 
 function showToast(message){
     const toast = document.getElementById("toast");
@@ -2088,6 +2097,7 @@ detailList.insertBefore(
 }
 document.getElementById('scheduleDetailClose').addEventListener('click', closeScheduleDetail);
 document.getElementById('scheduleDetailModal').addEventListener('click', event=>{
+  if(editMode) return;
   if(event.target===event.currentTarget) closeScheduleDetail();
 });
 document.getElementById('scheduleDetailList').addEventListener('click', event=>{
@@ -2567,12 +2577,14 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 });
 /* ===================== ADMIN MODAL ===================== */
 const modal = document.getElementById('adminModal');
-document.getElementById('adminBtn').addEventListener('click', ()=>{
+document.getElementById('adminBtn').addEventListener('click', async ()=>{
   if(editMode){
+    try { await signOut(auth); } catch(e){ console.error(e); }
     editMode = false; applyEditMode();
     document.getElementById('adminBtn').textContent = '⚙';
     return;
   }
+  document.getElementById('adminEmail').value = localStorage.getItem('doezAdminEmail') || '';
   modal.classList.add('show');
   document.getElementById('adminError').textContent='';
 });
@@ -2585,6 +2597,8 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
   try {
 
     await signInWithEmailAndPassword(auth, email, pw);
+
+    localStorage.setItem('doezAdminEmail', email);
 
     editMode = true;
     applyEditMode();
