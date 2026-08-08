@@ -296,6 +296,60 @@
   body.edit-mode .calendar-admin{ display:block; }
   .calendar-admin h3{ margin:0 0 4px; color:var(--mint-deep); font-size:18px; }
   .calendar-admin .hint{ margin:0 0 12px; color:var(--ink-soft); font-size:12px; line-height:1.5; }
+  .calendar-day.bulk-selected{ background:var(--mint-pale); box-shadow: inset 0 0 0 2px var(--mint-deep); }
+  .calendar-day.bulk-selected .calendar-day-number{ background:var(--mint-deep); color:#fff; font-weight:700; }
+  .bulk-add-toggle-btn{
+      padding:10px 16px;
+      border:1px solid var(--sand);
+      border-radius:12px;
+      background:var(--paper);
+      color:var(--mint-deep);
+      font-family:'Gowun Dodum',sans-serif;
+      font-size:14px;
+      font-weight:700;
+      cursor:pointer;
+  }
+  .bulk-add-toggle-btn:hover{ background:var(--mint-pale); }
+  .bulk-quick-row{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-bottom:14px; }
+  .bulk-weekday-picker{ display:flex; gap:4px; }
+  .bulk-weekday-chip{
+      width:30px; height:30px;
+      border:1px solid var(--sand);
+      border-radius:50%;
+      background:var(--paper);
+      color:var(--ink-soft);
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+  }
+  .bulk-weekday-chip.active{ background:var(--mint-deep); border-color:var(--mint-deep); color:#fff; }
+  .bulk-months-select{
+      height:30px; padding:0 10px;
+      border:1px solid var(--sand); border-radius:8px;
+      background:#fffaf0; color:#5b4a35; font-size:12px;
+  }
+  .bulk-quick-apply{
+      padding:7px 12px;
+      border:1px solid var(--mint-deep);
+      border-radius:8px;
+      background:var(--mint-deep);
+      color:#fff;
+      font-size:12px;
+      font-weight:700;
+      cursor:pointer;
+  }
+  .bulk-status-row{ display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:12px; border-top:1px dashed var(--sand); }
+  .bulk-selected-count{ font-family:'Space Mono',monospace; font-size:13px; color:var(--ink-soft); font-weight:700; }
+  .bulk-status-actions{ display:flex; gap:8px; }
+  .bulk-cancel-btn{
+      padding:8px 14px; border:1px solid var(--sand); border-radius:10px;
+      background:var(--paper); color:var(--ink-soft); font-size:13px; cursor:pointer;
+  }
+  .bulk-next-btn{
+      padding:8px 14px; border:1px solid var(--mint-deep); border-radius:10px;
+      background:var(--mint-deep); color:#fff; font-size:13px; font-weight:700; cursor:pointer;
+  }
+  .bulk-next-btn:disabled{ opacity:0.4; cursor:not-allowed; background:var(--ink-soft); border-color:var(--ink-soft); }
   .schedule-editor-list{ display:flex; flex-direction:column; gap:8px; }
   .schedule-editor-row{ display:grid; grid-template-columns:135px 110px minmax(0,1fr) 34px; gap:8px; align-items:center; padding:8px; border:1px solid var(--sand); border-radius:10px; background:#FCFAF5; }
   .schedule-editor-row input, .schedule-editor-row select{ width:100%; min-width:0; padding:7px 8px; border:1px solid var(--sand); border-radius:7px; background:var(--paper); color:var(--ink); font-family:'Gowun Dodum',sans-serif; font-size:12px; }
@@ -1099,6 +1153,7 @@ body.edit-mode #eventEditor{ display:block; }
       <span class="pill">DOEZ ARCHIVE</span>
       <span class="edit-badge">✎ 편집 모드</span>
       <button class="icon-btn" id="adminBtn" title="관리자 인증">⚙</button>
+<button class="icon-btn" id="previewToggleBtn" title="일반모드로 보기" style="display:none;">👁</button>
 <button class="icon-btn" id="saveBtn" title="저장" style="display:none;">💾</button>
     </div>
   </div>
@@ -1208,8 +1263,8 @@ body.edit-mode #eventEditor{ display:block; }
       <div class="info-tile">
         <div class="k">방송 시간</div>
         <div class="v" contenteditable="false" data-field="broadcastTime">
-☀️ [1부] : 평균 오전 11시 ~ 12시 방송 ON<br>
-🌙 [2부] : 평균 오후 6시 ~ 7시 방송 ON        </div>
+🌙 평일 오후 7시<br>
+☀️ 주말 오후 3시        </div>
       </div>
 </div>
   </div>
@@ -1218,14 +1273,14 @@ body.edit-mode #eventEditor{ display:block; }
 
     <div class="tile-row">
       <div class="info-tile">
-        <div class="k">이지의 주 컨텐츠</div>
+        <div class="k">메인 콘텐츠</div>
         <div class="v" contenteditable="false" data-field="broadcastMain">
           게임 · 소통
         </div>
       </div>
 
       <div class="info-tile">
-        <div class="k">이지의 아바타 포인트</div>
+        <div class="k">캐릭터 포인트</div>
         <div class="v" contenteditable="false" data-field="broadcastGame">
           노란색 · 공룡
         </div>
@@ -1358,6 +1413,16 @@ body.edit-mode #eventEditor{ display:block; }
   </div>
 </div>
 
+<!-- ================= BULK SCHEDULE ADD MODAL ================= -->
+<div class="modal-overlay" id="bulkScheduleModal" aria-hidden="true">
+  <div class="modal-box schedule-detail-box" role="dialog" aria-modal="true" aria-labelledby="bulkScheduleTitle">
+    <button class="schedule-detail-close" type="button" id="bulkScheduleClose" aria-label="닫기">&#215;</button>
+    <h3 id="bulkScheduleTitle">선택한 날짜에 일정 추가</h3>
+    <p class="detail-date" id="bulkScheduleCount"></p>
+    <div class="schedule-detail-list" id="bulkScheduleFormWrap"></div>
+  </div>
+</div>
+
 <!-- ================= NOTICE DETAIL MODAL ================= -->
 <div class="modal" id="noticeDetailModal" aria-hidden="true">
   <div class="modal-box notice-detail-box" role="dialog" aria-modal="true" aria-labelledby="noticeDetailTitle">
@@ -1413,9 +1478,14 @@ const db = getFirestore(app);
 
 onAuthStateChanged(auth, (user)=>{
   if(user){
+    isAdmin = true;
     editMode = true;
     applyEditMode();
     showToast('관리자 모드로 자동 로그인됨');
+  } else {
+    isAdmin = false;
+    editMode = false;
+    applyEditMode();
   }
 });
 
@@ -2143,7 +2213,7 @@ function renderCalendar(target, compact=false){
       return `<span class="schedule-label" style="--label-color:${category.color}" title="${escapeHtml(category.name)} · ${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>`;
     }).join('');
     const more = events.length>maxLabels ? `<span class="calendar-more">+${events.length-maxLabels}</span>` : '';
-    cells += `<div class="calendar-day${outside?' is-outside':''}${key===todayKey?' is-today':''}" data-calendar-date="${key}" role="button" tabindex="0" aria-label="${key} \uC77C\uC815 \uBCF4\uAE30">
+    cells += `<div class="calendar-day${outside?' is-outside':''}${key===todayKey?' is-today':''}${bulkAddMode && bulkSelectedDates.has(key)?' bulk-selected':''}" data-calendar-date="${key}" role="button" tabindex="0" aria-label="${key} \uC77C\uC815 \uBCF4\uAE30">
       <span class="calendar-day-number">${cellDate.getDate()}</span><div class="calendar-events">${labels}${more}</div>
     </div>`;
   }
@@ -2162,7 +2232,16 @@ function renderCalendar(target, compact=false){
     }));
   }
   target.querySelectorAll('[data-calendar-date]').forEach(day=>{
-    const showDetails = ()=>openScheduleDetail(day.dataset.calendarDate);
+    const showDetails = ()=>{
+      if(bulkAddMode){
+        const key = day.dataset.calendarDate;
+        if(bulkSelectedDates.has(key)) bulkSelectedDates.delete(key);
+        else bulkSelectedDates.add(key);
+        renderSchedule();
+        return;
+      }
+      openScheduleDetail(day.dataset.calendarDate);
+    };
     day.addEventListener('click', showDetails);
     day.addEventListener('keydown', event=>{
       if(event.key==='Enter' || event.key===' ') { event.preventDefault(); showDetails(); }
@@ -2173,9 +2252,159 @@ function renderScheduleAdmin(){
 
   const admin = document.getElementById('scheduleAdmin');
 
-  admin.innerHTML = '';
+  if(!bulkAddMode){
+    admin.innerHTML = `
+      <h3>여러 날짜에 한 번에 추가</h3>
+      <p class="hint">휴방처럼 여러 날짜에 똑같이 들어가는 일정을 한 번에 추가할 수 있어요.</p>
+      <button type="button" class="bulk-add-toggle-btn" id="bulkAddStart">📅 여러 날짜 선택 시작</button>
+    `;
+    document.getElementById('bulkAddStart').addEventListener('click', ()=>{
+      bulkAddMode = true;
+      renderSchedule();
+    });
+    return;
+  }
+
+  const weekdayNames = ['일','월','화','수','목','금','토'];
+  admin.innerHTML = `
+    <h3>여러 날짜 선택 중</h3>
+    <p class="hint">달력에서 날짜를 클릭해 선택하세요. 요일로 한 번에 고를 수도 있어요.</p>
+    <div class="bulk-quick-row">
+      <div class="bulk-weekday-picker">
+        ${weekdayNames.map((name,i)=>`<button type="button" class="bulk-weekday-chip${bulkQuickWeekdays.has(i)?' active':''}" data-weekday="${i}">${name}</button>`).join('')}
+      </div>
+      <select class="bulk-months-select" id="bulkMonthsSelect">
+        ${[1,2,3,6].map(m=>`<option value="${m}"${bulkQuickMonths===m?' selected':''}>향후 ${m}개월</option>`).join('')}
+      </select>
+      <button type="button" class="bulk-quick-apply" id="bulkQuickApply">이 요일로 선택</button>
+    </div>
+    <div class="bulk-status-row">
+      <span class="bulk-selected-count">${bulkSelectedDates.size}개 날짜 선택됨</span>
+      <div class="bulk-status-actions">
+        <button type="button" class="bulk-cancel-btn" id="bulkCancelBtn">취소</button>
+        <button type="button" class="bulk-next-btn" id="bulkNextBtn"${bulkSelectedDates.size===0?' disabled':''}>다음 (일정 입력)</button>
+      </div>
+    </div>
+  `;
+
+  admin.querySelectorAll('.bulk-weekday-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const day = Number(chip.dataset.weekday);
+      if(bulkQuickWeekdays.has(day)) bulkQuickWeekdays.delete(day);
+      else bulkQuickWeekdays.add(day);
+      chip.classList.toggle('active');
+    });
+  });
+  document.getElementById('bulkMonthsSelect').addEventListener('change', e=>{
+    bulkQuickMonths = Number(e.target.value);
+  });
+  document.getElementById('bulkQuickApply').addEventListener('click', ()=>{
+    if(bulkQuickWeekdays.size===0) return;
+    const start = new Date(calendarToday);
+    const end = new Date(calendarToday);
+    end.setMonth(end.getMonth()+bulkQuickMonths);
+    const cursor = new Date(start);
+    while(cursor<=end){
+      if(bulkQuickWeekdays.has(cursor.getDay())){
+        bulkSelectedDates.add(formatDateKey(cursor));
+      }
+      cursor.setDate(cursor.getDate()+1);
+    }
+    renderSchedule();
+  });
+  document.getElementById('bulkCancelBtn').addEventListener('click', ()=>{
+    bulkAddMode = false;
+    bulkSelectedDates.clear();
+    bulkQuickWeekdays.clear();
+    renderSchedule();
+  });
+  document.getElementById('bulkNextBtn').addEventListener('click', ()=>{
+    if(bulkSelectedDates.size===0) return;
+    openBulkScheduleForm();
+  });
 
 }
+function openBulkScheduleForm(){
+  document.getElementById('bulkScheduleCount').textContent = `${bulkSelectedDates.size}개 날짜에 추가됩니다`;
+  const wrap = document.getElementById('bulkScheduleFormWrap');
+  wrap.innerHTML = `
+    <div class="schedule-edit-row">
+      <div class="schedule-edit-toprow">
+        <select class="schedule-edit-category" id="bulkCategory">
+          ${categoryOptions('소통')}
+        </select>
+        <div class="schedule-edit-time">
+          <select class="schedule-edit-hour" id="bulkHour">${hourOptions()}</select>
+          <span class="schedule-edit-time-sep">:</span>
+          <select class="schedule-edit-minute" id="bulkMinute">${minuteOptions()}</select>
+          <div class="schedule-ampm-toggle" id="bulkAmpmToggle">
+            <button type="button" class="schedule-ampm-btn" data-ampm="AM">AM</button>
+            <button type="button" class="schedule-ampm-btn" data-ampm="PM">PM</button>
+          </div>
+        </div>
+      </div>
+      <input class="schedule-edit-title" id="bulkTitle" placeholder="일정 제목 (예: 휴방)" value="휴방">
+      <input class="schedule-edit-members" id="bulkMembers" placeholder="참여 멤버 (쉼표로 구분, 선택)">
+      <div class="schedule-part-toggle" id="bulkPartToggle">
+        <button type="button" class="schedule-part-btn" data-part="1부">1부</button>
+        <button type="button" class="schedule-part-btn" data-part="2부">2부</button>
+      </div>
+    </div>
+    <div class="schedule-modal-actions">
+      <button type="button" id="bulkApplyBtn" class="circle-btn save-btn"><span class="check-icon"></span></button>
+    </div>
+  `;
+
+  wrap.querySelectorAll('.schedule-ampm-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    const wasActive = btn.classList.contains('active');
+    btn.closest('.schedule-ampm-toggle').querySelectorAll('.schedule-ampm-btn').forEach(b=>b.classList.remove('active'));
+    if(!wasActive) btn.classList.add('active');
+  }));
+  wrap.querySelectorAll('.schedule-part-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    const wasActive = btn.classList.contains('active');
+    btn.closest('.schedule-part-toggle').querySelectorAll('.schedule-part-btn').forEach(b=>b.classList.remove('active'));
+    if(!wasActive) btn.classList.add('active');
+  }));
+
+  document.getElementById('bulkApplyBtn').onclick = async ()=>{
+    const category = document.getElementById('bulkCategory').value;
+    const title = document.getElementById('bulkTitle').value.trim();
+    if(!title) return;
+    const members = parseScheduleMembers(document.getElementById('bulkMembers').value);
+    const activeAmpmBtn = wrap.querySelector('.schedule-ampm-btn.active');
+    const ampm = activeAmpmBtn ? activeAmpmBtn.dataset.ampm : '';
+    const hour = document.getElementById('bulkHour').value;
+    const minute = document.getElementById('bulkMinute').value;
+    const activePartBtn = wrap.querySelector('.schedule-part-btn.active');
+    const part = activePartBtn ? activePartBtn.dataset.part : '';
+
+    bulkSelectedDates.forEach(dateKey=>{
+      state.schedule.push({
+        id: Date.now() + Math.random(),
+        date: dateKey,
+        category, title, members, part, hour, minute, ampm
+      });
+    });
+
+    await saveState();
+    bulkAddMode = false;
+    bulkSelectedDates.clear();
+    bulkQuickWeekdays.clear();
+    closeBulkScheduleModal();
+    renderSchedule();
+    showToast('선택한 날짜에 일정을 추가했어요');
+  };
+
+  const modal = document.getElementById('bulkScheduleModal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeBulkScheduleModal(){
+  const modal = document.getElementById('bulkScheduleModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+document.getElementById('bulkScheduleClose').addEventListener('click', closeBulkScheduleModal);
 function renderSchedule(){
   updateCalendarViews();
   renderScheduleAdmin();
@@ -2531,6 +2760,11 @@ function scrollTrack(id, dir){
 
 /* ===================== EDIT MODE ===================== */
 let editMode = false;
+let isAdmin = false;
+let bulkAddMode = false;
+let bulkSelectedDates = new Set();
+let bulkQuickWeekdays = new Set();
+let bulkQuickMonths = 1;
 
 const editableSelectors = [
   '#fanNickText', '#aboutText', '[data-field]',
@@ -2568,8 +2802,18 @@ function applyEditMode(){
 
   // ↓ 여기 안으로 이동
   const adminBtn = document.getElementById('adminBtn');
-  adminBtn.textContent = editMode ? '❌' : '⚙';
-  adminBtn.title = editMode ? '편집모드 종료' : '관리자 인증';
+  adminBtn.textContent = isAdmin ? '❌' : '⚙';
+  adminBtn.title = isAdmin ? '로그아웃' : '관리자 인증';
+
+  const previewToggleBtn = document.getElementById('previewToggleBtn');
+  previewToggleBtn.style.display = isAdmin ? 'inline-block' : 'none';
+  previewToggleBtn.textContent = editMode ? '👁' : '✏️';
+  previewToggleBtn.title = editMode ? '일반모드로 보기' : '편집모드로 돌아가기';
+
+  if(!editMode){
+    bulkAddMode = false;
+    bulkSelectedDates.clear();
+  }
 }
 
 document.getElementById("saveBtn").addEventListener("click", async () => {
@@ -2578,15 +2822,20 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
 /* ===================== ADMIN MODAL ===================== */
 const modal = document.getElementById('adminModal');
 document.getElementById('adminBtn').addEventListener('click', async ()=>{
-  if(editMode){
+  if(isAdmin){
     try { await signOut(auth); } catch(e){ console.error(e); }
-    editMode = false; applyEditMode();
-    document.getElementById('adminBtn').textContent = '⚙';
+    isAdmin = false;
+    editMode = false;
+    applyEditMode();
     return;
   }
   document.getElementById('adminEmail').value = localStorage.getItem('doezAdminEmail') || '';
   modal.classList.add('show');
   document.getElementById('adminError').textContent='';
+});
+document.getElementById('previewToggleBtn').addEventListener('click', ()=>{
+  editMode = !editMode;
+  applyEditMode();
 });
 document.getElementById('adminCancel').addEventListener('click', ()=> modal.classList.remove('show'));
 document.getElementById('adminConfirm').addEventListener('click', async () => {
@@ -2600,6 +2849,7 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
 
     localStorage.setItem('doezAdminEmail', email);
 
+    isAdmin = true;
     editMode = true;
     applyEditMode();
 
