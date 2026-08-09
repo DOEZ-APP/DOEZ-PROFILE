@@ -479,7 +479,9 @@
   .song-star-control.active{ color:var(--gold); }
   .song-card .remove-btn{ position:absolute; top:50%; right:10px; transform:translateY(-50%); }
   .songbook-empty{ padding:28px 12px; border:1px dashed var(--sand); border-radius:12px; color:var(--ink-soft); font-size:13px; text-align:center; }
-  @media(max-width:680px){ .songbook-toolbar{ display:block; } .song-filter-row{ margin-top:9px; margin-bottom:14px; } .song-card{ grid-template-columns:1fr; gap:7px; } .song-note{ grid-column:1; max-width:none; text-align:left; } }
+  .songbook-add-top{ margin-top:0; margin-bottom:14px; }
+  body.edit-mode .songbook-grid-wrap{ max-height:60vh; overflow-y:auto; padding-right:4px; }
+  @media(max-width:680px){ .songbook-toolbar{ display:block; } .song-filter-row{ margin-top:9px; margin-bottom:14px; } .song-card{ grid-template-columns:1fr; gap:7px; } .song-note{ grid-column:1; max-width:none; text-align:left; } body.edit-mode .songbook-grid-wrap{ max-height:52vh; } }
 
   /* ---------- Modal ---------- */
   .modal-overlay{
@@ -519,6 +521,13 @@
   .schedule-part-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--peach-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; }
   .schedule-time-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; font-family:'Space Mono',monospace; }
   .schedule-detail-empty{ padding:22px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
+  .song-add-form{ display:flex; flex-direction:column; gap:12px; flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:4px; margin:4px 0 14px; }
+  .song-add-field{ display:flex; flex-direction:column; gap:5px; color:var(--ink-soft); font-size:12px; font-weight:700; text-align:left; }
+  .song-add-field input, .song-add-field select{ width:100%; padding:9px 12px; border:1px solid var(--sand); border-radius:10px; background:var(--paper); color:var(--ink); font-family:'Gowun Dodum',sans-serif; font-size:13px; margin-bottom:0; }
+  .song-add-row{ display:flex; gap:12px; }
+  .song-add-row .song-add-field{ flex:1; min-width:0; }
+  .song-add-stars{ display:flex; align-items:center; gap:3px; padding-top:4px; }
+  .song-add-stars .song-star-control{ font-size:20px; }
 
   footer{ text-align:center; padding:26px 0 10px; font-size:12px; color:var(--ink-soft); }
 
@@ -1358,6 +1367,7 @@ body.edit-mode #eventEditor{ display:block; }
   <div class="panel" id="panel-songbook">
     <div class="card">
       <h2><span class="dot"></span>이지 노래책 🎵</h2>
+      <button class="add-btn songbook-add-top" id="addSong" type="button">+ 노래 추가</button>
       <div class="songbook-toolbar">
         <label class="songbook-search" for="songSearch"><span aria-hidden="true">⌕</span><input type="search" id="songSearch" placeholder="곡 제목 · 아티스트 검색"></label>
       </div>
@@ -1368,8 +1378,7 @@ body.edit-mode #eventEditor{ display:block; }
         <button class="song-filter" type="button" data-song-language-filter="일본어">일본어</button>
         <button class="song-filter" type="button" data-song-language-filter="영어">영어</button>
       </div>
-      <div class="songbook-grid" id="songbookGrid"></div>
-      <button class="add-btn" id="addSong">+ 노래 추가</button>
+      <div class="songbook-grid-wrap"><div class="songbook-grid" id="songbookGrid"></div></div>
     </div>
   </div>
 
@@ -1420,6 +1429,41 @@ body.edit-mode #eventEditor{ display:block; }
     <h3 id="bulkScheduleTitle">선택한 날짜에 일정 추가</h3>
     <p class="detail-date" id="bulkScheduleCount"></p>
     <div class="schedule-detail-list" id="bulkScheduleFormWrap"></div>
+  </div>
+</div>
+
+<!-- ================= SONG ADD MODAL ================= -->
+<div class="modal-overlay" id="songAddModal" aria-hidden="true">
+  <div class="modal-box schedule-detail-box" role="dialog" aria-modal="true" aria-labelledby="songAddTitle">
+    <button class="schedule-detail-close" type="button" id="songAddClose" aria-label="닫기">&#215;</button>
+    <h3 id="songAddTitle">노래 추가</h3>
+    <div class="song-add-form">
+      <label class="song-add-field">제목
+        <input type="text" id="songAddTitleInput" placeholder="곡 제목">
+      </label>
+      <label class="song-add-field">아티스트
+        <input type="text" id="songAddArtistInput" placeholder="가수 이름">
+      </label>
+      <div class="song-add-row">
+        <label class="song-add-field">언어
+          <select id="songAddLanguageInput"></select>
+        </label>
+        <div class="song-add-field">난이도
+          <div class="song-add-stars" id="songAddStars" aria-label="난이도 편집"></div>
+        </div>
+      </div>
+      <label class="song-add-field">메모
+        <input type="text" id="songAddNoteInput" placeholder="키업/키다운 등 부르기 메모를 입력하세요.">
+      </label>
+      <label class="song-add-field">재생 링크
+        <input type="url" id="songAddLinkInput" placeholder="https://www.youtube.com/...">
+      </label>
+    </div>
+    <div class="modal-error" id="songAddError"></div>
+    <div class="modal-actions">
+      <button class="cancel" type="button" id="songAddCancel">취소</button>
+      <button class="confirm" type="button" id="songAddConfirm">추가</button>
+    </div>
   </div>
 </div>
 
@@ -2593,9 +2637,69 @@ document.getElementById('songLanguageFilters').addEventListener('click', event=>
   document.querySelectorAll('[data-song-language-filter]').forEach(filter=>filter.classList.toggle('active', filter===button));
   renderSongs();
 });
-document.getElementById('addSong').addEventListener('click', ()=>{
-  state.songs.push({ uid:Date.now(), title:'새 노래 제목', artist:'가수 이름', language:'한국어', difficulty:3, note:'키업/키다운 등 부르기 메모를 입력하세요.', link:'' });
+let newSongDifficulty = 3;
+function renderSongAddStars(){
+  const wrap = document.getElementById('songAddStars');
+  wrap.innerHTML = [1,2,3,4,5].map(level=>`<button class="song-star-control${level<=newSongDifficulty?' active':''}" type="button" data-add-song-difficulty="${level}" aria-label="난이도 ${level}점">★</button>`).join('');
+}
+document.getElementById('songAddStars').addEventListener('click', event=>{
+  const button = event.target.closest('[data-add-song-difficulty]');
+  if(!button) return;
+  newSongDifficulty = +button.dataset.addSongDifficulty;
+  renderSongAddStars();
+});
+function openSongAddModal(){
+  document.getElementById('songAddTitleInput').value = '';
+  document.getElementById('songAddArtistInput').value = '';
+  document.getElementById('songAddLanguageInput').innerHTML = songLanguageOptions('한국어');
+  newSongDifficulty = 3;
+  renderSongAddStars();
+  document.getElementById('songAddNoteInput').value = '';
+  document.getElementById('songAddLinkInput').value = '';
+  document.getElementById('songAddError').textContent = '';
+  const modal = document.getElementById('songAddModal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+  document.getElementById('songAddTitleInput').focus();
+}
+function closeSongAddModal(){
+  const modal = document.getElementById('songAddModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+document.getElementById('addSong').addEventListener('click', openSongAddModal);
+document.getElementById('songAddClose').addEventListener('click', closeSongAddModal);
+document.getElementById('songAddCancel').addEventListener('click', closeSongAddModal);
+document.getElementById('songAddModal').addEventListener('click', event=>{
+  if(editMode) return;
+  if(event.target===event.currentTarget) closeSongAddModal();
+});
+document.getElementById('songAddConfirm').addEventListener('click', ()=>{
+  const titleInput = document.getElementById('songAddTitleInput');
+  const title = titleInput.value.trim();
+  const errorEl = document.getElementById('songAddError');
+  if(!title){
+    errorEl.textContent = '제목을 입력해주세요.';
+    titleInput.focus();
+    return;
+  }
+  errorEl.textContent = '';
+  const language = document.getElementById('songAddLanguageInput').value;
+  const newSong = {
+    uid: Date.now(),
+    title: title,
+    artist: document.getElementById('songAddArtistInput').value.trim(),
+    language: SONG_LANGUAGES.includes(language) ? language : '한국어',
+    difficulty: newSongDifficulty,
+    note: document.getElementById('songAddNoteInput').value.trim(),
+    link: document.getElementById('songAddLinkInput').value.trim()
+  };
+  state.songs.push(newSong);
   renderSongs();
+  closeSongAddModal();
+  showToast('✅ 노래가 추가됐어요');
+  const newCard = document.querySelector(`[data-song-remove="${newSong.uid}"]`);
+  if(newCard) newCard.closest('.song-card').scrollIntoView({behavior:'smooth', block:'center'});
 });
 
 /* ===================== EVENTS ===================== */
