@@ -407,39 +407,29 @@
   .balloon-count{ font-size:26px; font-family:'Space Mono',monospace; }
   .balloon-meta{ font-size:12px; color:var(--ink-soft); margin-top:6px; }
 
-  /* ---------- Karma / 업보 ---------- */
-  .karma-search{
+  /* ---------- Aegyo Collection / 애교 모음 ---------- */
+  .aegyo-controls{ display:flex; gap:10px; align-items:flex-end; margin-bottom:18px; }
+  .aegyo-select-wrap{ flex:1; min-width:0; display:flex; flex-direction:column; gap:5px; }
+  .aegyo-select-wrap label{ font-size:12px; color:var(--ink-soft); font-weight:700; }
+  #aegyoSelect{
     width:100%; padding:12px 16px; border-radius:999px; border:1px solid var(--sand); background:var(--mint-pale);
-    font-family:'Gowun Dodum',sans-serif; font-size:14px; margin-bottom:18px;
+    font-family:'Gowun Dodum',sans-serif; font-size:14px; color:var(--ink); cursor:pointer;
   }
-  .karma-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  @media(max-width:820px){ .karma-grid{ grid-template-columns:repeat(2,1fr);} }
-  @media(max-width:480px){ .karma-grid{ grid-template-columns:1fr;} }
-  .karma-card{
-    border:1px solid var(--sand); border-radius:16px; padding:16px; text-align:center; position:relative;
+  .aegyo-random-btn{
+    flex:0 0 auto; padding:12px 20px; border-radius:999px; border:1.5px dashed var(--mint-deep);
+    background:var(--mint-pale); color:var(--mint-deep); font-family:'Gowun Dodum',sans-serif; font-size:14px; font-weight:700;
+    cursor:pointer; white-space:nowrap; line-height:1.2;
   }
-  .karma-avatar{
-    width:56px; height:56px; border-radius:50%; margin:0 auto 8px; background:var(--mint-pale);
-    display:flex; align-items:center; justify-content:center; font-size:24px; border:2px solid var(--gold);
+  .aegyo-random-btn:hover{ background:var(--gold); border-color:var(--gold); color:#7A5B00; }
+  .aegyo-display{
+    border:1px solid var(--sand); border-radius:16px; padding:26px; min-height:140px; background:var(--paper);
+    display:flex; flex-direction:column; gap:12px;
   }
-  .karma-name{ font-weight:700; font-size:14px; }
-  .karma-id{ font-size:11px; color:var(--ink-soft); font-family:'Space Mono',monospace; margin-bottom:8px; }
-  .karma-tag-row{ display:flex; flex-direction:column; gap:4px; }
-  .karma-tag{
-    display:flex; align-items:center; gap:6px; font-size:12px; background:var(--cream); border-radius:8px; padding:4px 8px;
-  }
-  .karma-tag-label{ flex:1; min-width:0; text-align:left; }
-  .karma-tag .n{ font-family:'Space Mono',monospace; font-weight:700; color:var(--mint-deep); }
-  .karma-card .remove-btn{ position:absolute; top:8px; right:10px; }
-  .karma-tag-remove{
-    display:none; flex:0 0 auto; border:none; background:none; color:#c0574a; cursor:pointer; font-size:11px; padding:0;
-  }
-  body.edit-mode .karma-tag-remove{ display:inline-block; }
-  .karma-tag-add{
-    display:none; margin-top:10px; width:100%; padding:8px; border-radius:9px; border:1.5px dashed var(--mint-deep);
-    background:var(--mint-pale); color:var(--mint-deep); font-family:'Gowun Dodum',sans-serif; font-size:12px; font-weight:700; cursor:pointer;
-  }
-  body.edit-mode .karma-tag-add{ display:block; }
+  .aegyo-display-num{ font-family:'Space Mono',monospace; font-weight:700; color:var(--mint-deep); font-size:13px; }
+  .aegyo-display-text{ white-space:pre-line; line-height:1.8; font-size:15px; color:var(--ink); }
+  .aegyo-empty{ padding:28px 12px; color:var(--ink-soft); font-size:13px; text-align:center; }
+  .aegyo-note{ color:var(--ink-soft); font-style:italic; }
+  @media(max-width:680px){ .aegyo-controls{ flex-direction:column; align-items:stretch; } .aegyo-random-btn{ width:100%; padding:11px; } }
 
   /* ---------- Songbook ---------- */
   .songbook-toolbar{ display:flex; gap:10px; align-items:center; margin-bottom:12px; }
@@ -1172,7 +1162,7 @@ body.edit-mode #eventEditor{ display:block; }
     <button class="tab-btn" data-tab="schedule">일정</button>
     <button class="tab-btn" data-tab="outfit">의상</button>
     <button class="tab-btn" data-tab="songbook">노래책</button>
-    <button class="tab-btn" data-tab="karma">업보</button>
+    <button class="tab-btn" data-tab="aegyo">애교</button>
   </div>
 </div>
 
@@ -1383,12 +1373,19 @@ body.edit-mode #eventEditor{ display:block; }
   </div>
 
   <!-- ================= KARMA ================= -->
-  <div class="panel" id="panel-karma">
+  <div class="panel" id="panel-aegyo">
     <div class="card">
-      <h2><span class="dot"></span>크앙이 업보 현황 🦖</h2>
-      <input type="text" class="karma-search" id="karmaSearch" placeholder="닉네임 또는 SOOP ID 검색...">
-      <div class="karma-grid" id="karmaGrid"></div>
-      <button class="add-btn" id="addKarma">+ 업보 항목 추가</button>
+      <h2><span class="dot"></span>이지 애교 모음 🎀</h2>
+      <div class="aegyo-controls">
+        <div class="aegyo-select-wrap">
+          <label for="aegyoSelect">번호로 찾기</label>
+          <select id="aegyoSelect"></select>
+        </div>
+        <button class="aegyo-random-btn" id="aegyoRandom" type="button">🎲 랜덤 뽑기</button>
+      </div>
+      <div class="aegyo-display" id="aegyoDisplay">
+        <div class="aegyo-empty">번호를 선택하거나 랜덤 뽑기를 눌러보세요 🎀</div>
+      </div>
     </div>
   </div>
 
@@ -1576,7 +1573,6 @@ renderNotices();
 renderSchedule();
 renderOutfits();
 renderSongs();
-renderKarma();
 renderEvents();
 renderEventPreview();
 
@@ -1610,8 +1606,6 @@ fanNick: "°ezOOO",
   outfits: [
   ],
   songs: [
-  ],
-  karma: [
   ],
   events: [
   ],
@@ -2785,78 +2779,1103 @@ function renderEventPreview(){
     renderEventPreview();
   };
 }
-/* ===================== KARMA ===================== */
-function renderKarma(filter=''){
-  const grid = document.getElementById('karmaGrid');
-  grid.innerHTML='';
-  state.karma
-    .filter(k=> (k.name+k.id).toLowerCase().includes(filter.toLowerCase()))
-    .forEach((k)=>{
-      const c = document.createElement('div'); c.className='karma-card';
-      c.innerHTML = `<button class="remove-btn" data-uid="${k.uid}">✕</button>
-        <div class="karma-avatar">🐰</div>
-        <div class="karma-name" contenteditable="false" data-uid="${k.uid}">${escapeHtml(k.name)}</div>
-        <div class="karma-id" contenteditable="false" data-uid="${k.uid}">${escapeHtml(k.id)}</div>
-        <div class="karma-tag-row">
-          ${k.tags.map((t,ti)=>`<div class="karma-tag">
-              <span class="karma-tag-label" contenteditable="false" data-uid="${k.uid}" data-tag-i="${ti}">${escapeHtml(t.label)}</span>
-              <span class="n karma-tag-count" contenteditable="false" data-uid="${k.uid}" data-tag-i="${ti}">${escapeHtml(t.count)}</span>
-              <button class="karma-tag-remove" data-uid="${k.uid}" data-tag-i="${ti}" title="항목 삭제">✕</button>
-            </div>`).join('')}
-        </div>
-        <button class="karma-tag-add" data-uid="${k.uid}">+ 항목 추가</button>`;
-      grid.appendChild(c);
-    });
-  applyEditMode();
-  grid.querySelectorAll('.remove-btn').forEach(b=>b.addEventListener('click', ()=>{
-    state.karma = state.karma.filter(k=>k.uid !== +b.dataset.uid);
-    renderKarma(document.getElementById('karmaSearch').value);
-  }));
-  grid.querySelectorAll('.karma-name, .karma-id').forEach(el=>el.addEventListener('input', ()=>{
-    const entry = state.karma.find(k=>k.uid === +el.dataset.uid);
-    if(!entry) return;
-    entry[el.classList.contains('karma-id') ? 'id' : 'name'] = el.textContent;
-  }));
-  grid.querySelectorAll('.karma-tag-label, .karma-tag-count').forEach(el=>el.addEventListener('input', ()=>{
-    const entry = state.karma.find(k=>k.uid === +el.dataset.uid);
-    if(!entry) return;
-const tag = entry.tags[+el.dataset.tagI];
+/* ===================== AEGYO ===================== */
+const AEGYO_LINES = [
+{ id:1, text:`당신은 OOO와 만나서 행복하다구 말하여따 >ㅁ<
 
-if(el.classList.contains('karma-tag-count')){
-  tag.count = el.textContent;
-}else{
-  tag.label = el.textContent;
-}  }));
-  grid.querySelectorAll('.karma-tag-remove').forEach(b=>b.addEventListener('click', ()=>{
-    const entry = state.karma.find(k=>k.uid === +b.dataset.uid);
-    if(!entry) return;
-    entry.tags.splice(+b.dataset.tagI, 1);
-    renderKarma(document.getElementById('karmaSearch').value);
-  }));
-  grid.querySelectorAll('.karma-tag-add').forEach(b=>b.addEventListener('click', ()=>{
-    const entry = state.karma.find(k=>k.uid === +b.dataset.uid);
-    if(!entry) return;
-entry.tags.push({
-  label:'새 항목',
-  count:1
-});    renderKarma(document.getElementById('karmaSearch').value);
-  }));
+당시는! OO와 남은생을 함께 보내고 싶다구 말하여따!
+
+당시는! OOO와 손잡구 뽀뽀하구 데이뚜하고 싶다구 말하여따! (녜헤헤♥)
+
+나눈 이짜나 이짜나! 너 쪼아해 ><
+
+너눈! 나 보고 싶니 >< 언제나 OO만을 보게 헤두께!!
+
+이짜나 내가! 할마리이쬬 이짜나 내가 녀듈됴아행♥뜌륭해♥스릉햐~!♥
+
+따룽따루룽 전화가 와쪄요 누구떼요?
+
+따랑한다구요? 저두 따랑해요!
+
+우리 오눌뷰텨 1일 이에요우 >ㅁ< 뿌우~뿌!(쪾쪾쪾♥)♥` },
+{ id:2, text:`오빠아앙 오빠나 오빠 쪼아행~~ 오빠도 나 조앙??
+
+난 영원히 오빠 곁에 있을꼬양 오빠 나 기엽징 세상에서 가장 귀엽터지는 기요미는 나양!
+
+근데 이제 이런거 하지마아아아아~ (이름) 애교같은거 못 행
+
+흐규흐규 오빠 뿌잉뿌잉 왜케 표정이 심각해에에~ 오빠 삐졌영?
+
+내가 화 풀어줄게 나 봐방~! 있짜나 내가 할말이 있쪼 있짜나
+
+내가 오빠를 쪼아해 오빠 사탕행 아이 부끄러웡 힝....
+
+오빠 매일매일 꼭 나 보쟝! 나 오빵 지이이이이인짱 쪼아서 못 참꼤엉
+
+흑흑 나는 단팥빵 호빵 크림빵 다 필요없썽
+
+오빵만 필요해애앵 아아아앙 오빠 나빠또ㅠ
+
+나 이런거 못행ㅠ 나 완전 당황해가꼬 머리가 터어엉 하구 비였잖나 그래두 알징?
+
+나 오빠 사릉해!` },
+{ id:3, text:`아잉과자사죠냥_♥ 오빠라고 불러두댕?
+
+쟈기야 뽑뽀! 오빠오빠 맛난고 사죠잉_*
+
+냐오옹 난 자기의 꼬양이가 될래요○_○
+
+꼬양이 밥줘어 산책도 시켜줘 냥아잉
+
+남치니 나 항상 지켜줄꼬지?+_+
+
+냐오오오옹_멍멍짜기야아잉 내일 뎃트할래 꺄우헤헤.
+
+키뜨해도대? 내일 밤에 흐흐흐흐흐흐 *_*
+
+나 진심으로 따랑하짓?
+
+아잉 나 남친니가 제일 쪼아 으히히` },
+{ id:4, text:`멍멍 ! 주인님을 위해서라면 ♥
+
+멍멍이능 뭐등 할뚜있어요멍!♥
+
+헥헥헥헥~♥쥬잉님!멍!♥
+
+산책가쭈떼여!멍!♥ 헥헥!♥
+
+빨가안 가죽 목줄 채워주떼여~♥
+
+헥헥헥헥헥헥헥헥!♥` },
+{ id:5, text:`자기야 자기야 우리자기 ○○이 초코우유 먹고싶어
+
+츄릅~츄릅~초코초코~초코우유사줘~★히힛★
+
+그리고 솜사탕도 사주면 안돼?
+
+자기 입술처럼 달콤한거~
+
+너뮤너뮤 먹꼬싶딴마리야
+
+뭐? 다 사쥰다규? 우리 이쁜 자기
+
+너뮤너뮤 사랑해 쪽~~` },
+{ id:6, text:`OOO OOO! OO 부탁 들어줄 수 있냥?
+
+싫타냥? 우웅 OOO OOO 들어줄꺼지?
+
+어서 눈 빨리 감으라냥 OO눈 부끄럽다냥
+
+츄~하 OOO 좋아하는 만큼 뽀뽀할꺼다냥
+
+쪽 이만쿰 쪽 이만쿰 쪽 이만쿰
+
+OO는 OOO 좋아한다냥 OOO! 어서 OO 안아달라냥
+
+OOO 뿌..뿌..뿌뿌뿌 따랑해~♥` },
+{ id:7, text:`OOO OOO! OO 부탁 들어줄 수 있냥?
+
+그대로 날 보고 서있어 줄수 있냥?
+
+OO가 OOO을 맛.볼.거.니.까.
+
+나만 바라봐 줄 다크 초콜볼 같은 눈도 한입 쪽
+
+복숭아 같은 핑크빛의 볼도 한입 쪽
+
+그리고 마지막으로 나만의 딸기 같은 입술도 한입 쪽
+
+딸기는 OO가 가장 좋아하니까 더 맛볼 거야 쪽 이만큼
+
+쪽 이만큼 쪽 이만큼 쪽 이만큼 쪽 이만큼 쪽 이마큼 쪽 이만큼
+
+후웅 아직 OO는 부족해 쪽 한번더 쪽 한번더 쪽 한번더 쪽 한번더 쪽 한번더
+
+OO가 OOO 맛봤으니까
+
+OOO은 OO 전용 식재료 앙~♥` },
+{ id:8, text:`OOO OOO! OO냥이의 부탁 들어줄 수 있냥?
+
+OOO냥이 눈을 감고 10초만 기다려 줬으면 좋겠다냥?
+싫다구냥? 우웅 OOO OOO 들어줄꺼지냥?
+
+어서 눈 빨리 감으라냥 어서 감으라냥 OO냥이는 부끄럽다냥
+
+츄~  하 OOO 부끄럽냥? 얼굴 빨개졌다냥 귀엽다냥
+
+OO냥이가 OOO 좋아하는 만큼 뽀뽀할꺼다냥 쪽
+
+요기도 쪽(좌) 조기도 쪽(우) 이이이잉(귀엽게) 여기도 쪽
+
+OO냥이는 OOO을 정말 좋아한다냥 으른냥
+
+빨리 안아달라냥 OOO 따랑해~ 쪽` },
+{ id:9, text:`초콜릿 초콜릿 까맛코 입만에서 살살 녹는 초콜릿
+
+화이트 초콜릿 밀크 초콜릿 타크 초콜릿 블랙 초콜릿 너무너무 맛있어요
+
+맛이 너무너무 좋아서 자꾸자꾸 먹고싶어요
+
+하지만 다른건 다 필요없어
+
+가나 초콜릿이 너뮤너뮤 좋아요` },
+{ id:10, text:`달달 촉촉한 OO애교 받아럇 세상에서 가장 귀여운 OO애교 받아럇
+
+마카롱 앗 댜메 댜메
+
+츄파츕스 앗 댜메댜메
+
+OO입쯀 OO를 세상에서 제일 사랑해줘
+
+해줘해줘` },
+{ id:11, text:`어 오빠 어디가? 또 나 두고 어디가는거야?
+
+OO는 오빠랑 떨어져 있기 싫은데 진짜 갈꺼야?
+
+하.....혼자 있는거 무서운데.... 역시 싫어! 가지마!....으웅?
+
+정말 가야되는거야?...알았쪄....
+
+어? 맛있는거 사올꺼야? 어떤거?(매우 신나하며)
+
+웅? 뭐먹구 싶냐구? 음...난 오빠의 사랑?` },
+{ id:12, text:`(술취한투로 사투리) 오빠야~~ 오빠는 내 어케 생각하는데~♡
+
+이야기 안 해줄끼가? 뭐라고? 그러면 이거 마시면 나랑 사귀는거제?
+
+취했다고? 우우웅♡ 빨리 말해달란 말이야♡
+
+그럼 진짜로 마신... 뭐라고? 진짜제?
+
+나 좋아하는거 맞제?
+
+그럼 나도 오빠 좋아하니깐 오늘부터 1일이데이♡` },
+{ id:13, text:`변신 귀엽 뽁짝 OO 애교와 귀여움으로 펼쳐진 OO!
+
+OOO들의 지갑을 사로잡아버리겠어
+
+필살 OOO들의 지갑에 하트 발쌰 뿅♥뿅♥` },
+{ id:14, text:`개껌~♥멍멍멍~♥ 아쟉아쟉아쨖~♥단단하녜~?
+
+♥아쟉아쨕!♥마시쪄~♥쥬잉님!♥
+
+멍멍!개껌은 멍멍이의 마싰늉 갼식거릐!♥
+
+아쟊아쟉~♥쥬잉님께서 개껌을 던져쥬시믄~♥
+
+멍멍이늉개껌이 던져진 곳으류 달려가요멍!
+
+♥멍멍멍멍!♥그리규 멍멍이늉 개껌을 마싓게 머거욤~♥` },
+{ id:15, text:`(울먹거리면서) 오..빠..저 사람드리..OO 괴로폈어...웅...
+
+OO 마음이 마니마니 아팠어... OO 힘들렀어...
+
+우웅... 울지 말라구?  OO 안울고 있어! 안울고 있다니까...
+
+오빠 미워! OO 삐질꼬얌! OO 안 우렀다니까!
+
+힝... 그티만...그티만.... OO는...
+
+징짜 안우렀단 마리야... 힝... 힝... OO 뚝 할거야... 힝...` },
+{ id:16, text:`콜랴아아~♥ 새까맣꾸우~♥ 달달하꾸우~♥
+
+이사나딴쏘두 마니마니있능~♥
+
+꼬까꼴랴듀우 마시꾸우~♥
+
+팹띠꼴랴두우 마시꾸우~♥
+
+콜랴아 라믄 다 주떼여!♥` },
+{ id:17, text:`고양이다냥♥냥냥♥ 냥이의 짱짱긔여븐
+
+냥이의 파워에 쫄아보아라냥♥냥냥냥♥
+
+강아지보다 냥♥ 더 긔엽브다냥♥
+
+냥이 식성운~ 딸긔우유 냥♥
+
+쪼꼬우유냥♥다랑어냥♥
+
+섞어묵는다냥♥ 할짝할짝♥ 덥석덥석♥ 냥냥♥
+
+딸긔우유가 녀뮤녀뮤 마시써여~
+
+냥이눙~ 다랑어보다눙~ 참찌가 더 마시따냥♥ 냥냥♥` },
+{ id:18, text:`OO냥이느응! 참치가 제일루 좋다냥!
+
+오빠들과 같이 먹는 참치가 세상에서 제일로 달콤한 꿀처럼 냥냥! 달콤하다냥!` },
+{ id:19, text:`나는 매지컬 OO짱! 세계에서 가장 귀여고 이쁘고 아름다운
+
+매지컬 OO! 모두모두 OO의 매력에 푸욱 빠져보라구!?
+
+찡긋 OO OO 비이이이임` },
+{ id:20, text:`우리 언니오빠들 내 귀여운 애교 보면서 놀랭?
+
+나 오늘 우리 언니오빠들한테 애교 보여주고 싶어!
+
+우리 언니 오빠들 나한테 심쿵 당해줄래요?` },
+{ id:21, text:`어? 오빠 어디가? 또 나 두고 어디가는거야?
+
+OO는 오빠랑 떨어져 있기 싫은데 진짜 갈꺼야?
+
+하... 혼자 있는거 무서운데... 역시 싫어! 가지마!
+
+웅? 정말 가야되는거야?....알았어... 어? 맛있는거 사올꺼야?
+
+어떤거? 웅? 뭐먹구 싶냐구? 음...난 오빠의 사랑? 헤헤 장난이지! 그럼 난 슈크림빵 먹구싶어!
+
+새하얀 슈크림빵이랑 까아만 초코우유랑 같이 먹으면 엄~청 맛있써!
+
+나중에 오빠도 같이먹자! 아랏지? 다녀와~ 사랑해~♥
+
+웅? 혼자 집에있는거 이제 안무섭냐구? 엣헴! 오빠가 나한테 맡기고 갔다온다는데 당연히 해야지!
+
+OO도 이정도는 할수있어! 엣헴! 다녀와~ 오빠~ 기다릴께~ 사랑해~♥` },
+{ id:22, text:`나 예쁜척하면 재수없지? 근데 나도 곤란하다~ 나는 예쁜척하는게 아니라 그냥 예쁘게 태어난곤데
+그거를 남들이 막 막예쁜척하는 거라고 구니까능 애라두 힘들어 훙흥` },
+{ id:23, text:`안녕안녕 너무나도 멋있고 우월한 OOO 옵빠들!
+
+나는 치지직 최고의 간땡이와 담력과 귀여움과 애교를 가진 OO라고 행! ><
+
+나는 있지.... 요즘 고민이 하나 있어...바로..... OOO이 너무도 좋다는 거야.....
+
+(조심스러운 말투로) 나 처음에는 이 마음을 억누르려고 했었다....?
+
+그런데 계속 방송하면 할수록 OOO 옵빠들한테 향하는 이 마음을
+
+(감정을 억누르고 말하듯이)....억누를 수가 없게 됐어
+
+난 스트리머고… OOO 옵빠지만...그치만....그치만 난!
+
+(결의를 다진 말투로) 난 OOO 옵빠가 좋아! 세상 그 누구보다도 좋다구!
+
+(비장하게) 그러니까, 나의....나의 남자친구가 되어줘!
+
+내 남자친구가 되면 평생 행복하고 후회하지 않게 만들어줄게!
+
+OOO 옵빠! 내 것이 되어줘!` },
+{ id:24, text:`아이쿠. 흐에에에엥. OOO아아아앙. 나 무룹 까였또오.
+
+호해도 호해도오오오 OO눈 너무우 아포 후에에엥.
+
+호에에? OOO들 호~ 해준고얍? 너무너무 고마웡~~헤헤` },
+{ id:25, text:`OOO들 OOO드으을~! 여러부늬 귀~~~여운 아기천사
+
+OO이 왔떠여!!! 뿌잉뿌잉~!! OO눈 도네가 피료해용~!
+
+우리 OOO들 도네해주때용~♡` },
+{ id:26, text:`삐약삐약 삐약삐약 나는 삐야기 삐야기는 모이를 죠아해 삐약
+
+삐야기 모이 머겨주면 앙대요? 삐야기는~ 쓰담쓰담됴아해요
+
+삐야기는요 주잉님손에 올라가서 삐약삐약 하면서 울면서 주잉님과 함꼐 보내고싶어요
+
+주잉님의 따뜻한 손길 속에서 자고시퍼요 삐약 삐야기는 주인님 곁에 이써서 행보케요 삐약
+
+주잉님 다음생에 태어나며능요 주잉님처렁 인간으로 태어나서요 주잉님과 행복하게
+
+----------------여기부터 섹시하게------------------
+
+연애하고 사귀고 결혼하고 방잡아놔요 삐약
+
+내기 이뿌게 옷입고 삐약삐약 그방 찾아갈게요` },
+{ id:27, text:`안녕!! 좋은 저녁이야 OOO!! 나는 인싸중에 인싸! OO!!!이라고해
+
+나는 주로 아침에 딸기를 먹어! 저녁에는 초콜릿을 먹지 훗!
+
+있잖아 나는 세상에서 초콜릿을 제일좋아해! 물론 딸기도 좋아하지!
+
+그것들을 우유로 먹으면 얼~마나 맛있는지 방구석 아싸인 으른양들은 모를거야 하지만 나는 알지!
+
+초코~쬬아초코~쬬아초코~쬬아 딸기~쬬아딸기~쬬아~
+
+내가 싸랑하고 쬬아하는 쬬꼬랑딸기 많이 사온다음에 냉장고에 숨겨서 나혼자만 머글꼬야!
+
+부모님에게도 줄수없는 이 나만의 소중한 초코우유 딸기우유 (바보처럼)흐흐흐흐흐헤헤헤헤헤헤` },
+{ id:28, text:`오빵~?♡ 지금 여기서 뭐해~♡ 우웅? 나?
+
+OO눈...오빠가 뭐 하는지 궁금해서 와띠~? 엣헴!
+
+000은 오빠 보눈게 더 좋은걸? 나같은 귀여운 동생이 있는걸 고맙게 여기라구!?
+
+에에? 귀여운 동생이 어딨냐구? 엣헴!엣헴!
+
+여~기 우리 오빠의 눈 앞에 있자나? 나만큼 귀엽고 사랑스러운 동생이 어디있다구!?
+
+OO는 세상에떠~♡
+
+제일 제일 긔여브니까! 아니라구? 우웅...
+
+OO 삐질꼬야! 흥!흥! 저리가! 오빠 몰라! 우우...머리에 손 올리지 마아...
+
+아랐어... 그럼 뽀뽀해줘... 안돼요...? 징짜 안대여...?` },
+{ id:29, text:`자자! 날이면 날마다 오는 OOO의 애교 시간이 아니…….
+
+매일 애교하니깐 이건 아닌가? 코흠!
+
+뭐! 매일 애교하지만 OO는 즐거우니깐 상관없지 뭐!
+
+그럼 시작한다?
+
+OO눈~ 하도 딜을 맞아서~ 힐을 해줄 힐러가 필요해요!
+
+구러니깐~ OOO들이 힐 좀 해주면 안돼요?
+
+뿌우우~ 왜 딜만한다는 거에요?! OO한테 홋치홋치 혼나고 싶어요?
+
+우우…. OO가 강아지같이 귀엽다니…. 어쩔 수 없죠! 대신 적당히 딜해야되요? 자! 약~속!` },
+{ id:30, text:`(? ' ³')? 뽀뽀해줘요(끔찍하도록 귀엽게 )
+
+( 'ㅅ') 안 돼요? ( 아주 귀엽게 )
+
+(? '▽')? 그럼 안아줘요!!! (끔직하도록 귀엽게)
+
+( 'ω') 그것도 안돼요?
+
+( TωT) 그럼 되는 게 뭐예요?ㅜㅜ
+
+(-..-.) 우이띠..
+(^) 삐졌어요 ..저리가요. (새침하게..) ( ..) 있잖아요..
+
+(/ '▽')/ 뽀뽀해줘요! (아주 귀엽게) ( ..) 안돼요?
+
+(/ '▽')/부빗거리게 해줘요! (섹시발랄하게) ( ..) 안돼요?
+
+(/ '▽')/ 그럼 안아줘요 !
+
+o('-'o) 뽀뽀뽀 (o'-')o 해주세욥
+
+( ' -')_ 그것도 안돼요?
+
+(/ '△')/난 너에게 허락을 구하지않겠어!
+
+(당당하게 박력있게)  (/ ?ω?)>널 가저버리겠어!!!!!  (박력있게)` },
+{ id:31, text:`어빠앙~ 쪼기 저 나뿐 어빠드링 긔여븐
+
+OO한테에 꼐에소옥 애겨 시키려고 하고 이떵...힝...힝...
+
+OO눈...따키 끄런 애겨 안해도옹 쯍부니 긔여버소..
+
+긔여븐 척 안해도 대는대엥...힝... 긔여븐
+
+OO눈...쩌 어.빠들 때뮤네 마늬마늬 슬퍼...힝...
+
+OO 울고싀퍼...힝...OO울꼬야...힝..힝..` },
+{ id:32, restricted:true, note:`이 항목은 저작권이 있는 노래 가사(『프리즘스톤』 수록곡 "Blowin' in the Mind")를 인용하고 있어 원문을 그대로 옮기지 않았어요. 실제 가사는 공식 음원이나 가사 사이트에서 확인해주세요.` },
+{ id:33, text:`안녕안녕! 작고 귀여운 OOO 친구들!
+
+나는 치지직의 아이돌 OOOO OO OO라고 해!
+
+아니아니. OO가 아니라 O!O! 있지, 다음엔 꼭 기억해줘☆
+
+언제나 당신 곁에서 당신을 응원하는 OO!
+
+힘들어도 언제나 냥냥! 행복하게 보내자구!` },
+{ id:34, text:`OO눈...이고 머꼬시퍼요! OO한테 이거랑 요거...사주시며는...안대여?
+
+이고 사주며는....OO눈 이~따만큼 좋아할꼬에여!
+
+헤헷! 에에...안대여...? (울먹) 안대는데...
+
+OO...저거 머꼬시픈데...안대는데...우엥! OO 울꺼야!
+
+으에에ㅠㅠ 저거 사주떼여ㅠㅠ OO 저거 머꼬싶단 마리에여ㅠㅠ 으에에ㅠㅠ
+
+(혀짧은 소리) 모듀들 조요옹! 에헴! 떼상에서
+
+쩨-일 긔여븐 OO가 왔다구! 모듀들 긔여븐 OO를 위해서 마싯는 거슬 마니마니 가져와랴!!
+
+엣헴! OO눙 지금 달콤한 거시 머꼬시픈 거시다!!
+
+에..엣? 아, 아냐!! 가지먀!! 가지마요!! 쌘 척 안할게요 가지마러요 ㅠㅠ
+
+우에엥 OO가 미아내요 ㅠㅠ 우엥 ㅠㅠ` },
+{ id:35, text:`짐은 사랑의 화신이자 애교를 즐기는 자다냥
+
+이 곳에서 어설프게 짐을 따라하는 4마리의 OOO가/이 있다 해서 찾아왔다냥
+
+짐은 일족의 숙명인 애교를 모욕하는 OOO을 용서할만큼 자비롭지 못하다냥
+
+허나 짐이 오랫만에 심연에서 나왔으니 기쁜마음으로 그대들을 용서하겠다냥
+
+짐의 따랑에 총알에 죽고싶지 않다면 짐의 눈 앞에서 사라지는것이 좋을것이다냥
+
+그렇지 않다면
+
+수 많은 적들의 마음을 설레게한 짐의 사랑의 총알이 그대들의 마음을 도. 륙. 을 내버릴것이다냥
+
+사랑의 총알 한방 쪽! 사랑의 총알 두발 쪽! 사랑의 총알 세발 쪽! 사랑의 총알 네발 쪽!
+
+어떠냥
+
+이 총알에 모든 적들은 도륙을 당했다냥
+
+너희 OOO들도 이 총알에 도륙 당하고 싶냥?
+
+그러니 빨리 도망쳐라냥
+
+다음에 힘을 길러 도전하라냥
+
+짐은 이곳에서 그대들을 기다리겠다냥
+
+짐에게 도전할 미래에 4마리의 애교 OOO에게 짐의 존명을 특별히 알려주겠다냥
+
+짐의 존명은 심연의 드래곤이자 사랑의 수녀! OO다!!!! 냥~` },
+{ id:36, text:`짜요짜요 ~ ♡ 맛나눈우웅~ ♡ 짜요옹~ ♡ 나완전 짜요짜요 많이 먹울꾼뒈 ~ ♡
+
+짜요짜요 사주면안됭 ~ ♡우리 이뿌닝 ~ ♡ 요짜요짜 짜요짜요 ~♡
+
+1갱~ ? ♡ 2 개앵~ ♡ 3개앵 ~ ♡ 4개앵 ~ ♡ 많이부족한뒈잉 ㅠㅠㅠ ♡
+
+많이사쪼잉 ~ ♡ 짜요짜요 맛잇눈짜요 ~ ♡ 히히힣 맛잇게먹울게 ♡
+
+짜요짜요나 요짜요짜 뭐고를렝 +ㅁ+? ♡ 나는 짜요짜요 맛잇구궤엥 먹울레 ~ ♡
+
+쪽쪼고쪽 맛잇게 빠라먹자앙 ~ ♡` },
+{ id:37, text:`냥이세마리가~♡ 한집에있냥~♡ OOO냥~♡ OOO냥~♡ OOO냥~
+
+♡OOO냥은 멋져냥~♡ OOO냥은 무섭냥~
+
+♡OOO냥은 너무긔엽냥!♡ 냥냥~♡냥냥~♡ 나~이쁘냥~?♡` },
+{ id:38, text:`우웅~ OO 애교못하눈뎅ㅠㅠ이거누가시킨고야!!
+
+애교시킨사람미어미어!ㅠㅠ구래도해야징!!히힛~
+
+1도하기1은기여미☞^.^☜
+
+2도하기2는기여미p(>3<)q
+
+3도하기3도기여미~~p(^0^)q
+
+어떼영?00기여워용?귀여우면 뽑뽀~♡` },
+{ id:39, text:`우쥬 채강 귀요미 OO쨩 등★쨩★ OO쨩의 채강★ 쨩★쨩★ 귀여븐 애교로★ 온 우쥬를 지배하게쪄★
+
+태양보다 밝은 OO쨩의 위풍★당당★얼굴!★ OO쨩...귀여버...?★ 사랑스러워?★ 그러면... OO쨩이랑...뽀뽀하쟈...★` },
+{ id:40, text:`옵항~ 제가 오늘 학교 개교기념일이라 오빠 불시검문 왔는데 이러면 나 너무 속상해~ 흐응~!
+
+옵팡~ 이 여자 사람이 나보고 누구냐는데~응응?
+
+우웅~~ 옵팡~ 너무 작잖아~ 더 크게 말해줘~
+
+더 크게!!
+
+보고 싶었쪄~~~` },
+{ id:41, text:`으른양 오빠아앙 나 오빠 쪼아헹~~
+
+오빠도 나 죠앙? 난 영~원히 오빠 곁에 있을꼬양
+
+오빠 나 기엽징?? 세상에서 제일 귀욤터지는 기요미는 나양!
+
+근데 이제 이런거 하지마아아아~
+
+OO눈 애교 같은거 못행 흐규흐규
+
+오빠 뿌잉뿌잉 왜케 표정이 심각해에~
+
+오빠 삐쪘엉? 내가 화 풀어줄게 나봐봥~!
+
+이짜나 내가 할말이 이쬬 이짜나 내가 오빠 쪼아해 오빠 사랑행!
+
+아이 부끄러웡 힝...  오빠 우리 매일매일 꼭 나 보장! 쪽!` },
+{ id:42, text:`귀엽게)녀바라! OO 공듀님이 명한다아아 내앞으로 디굼 단쟝 쪼꼬우유를 대려엉 해라아아 어허!!
+
+쪼꼬우유를 대령하라 하지 않았냐아아! 히잉.. OO공듀님은 쬬꼬우유 마시고 시포ㅠㅠㅠㅠ
+
+쬬꼬우유 마시고시따고요 쬬꼬우유 업뜨면 OO공듀님은 울꺼야! 쥬거버리꼬야ㅠㅠㅠㅠㅠ
+
+으른양 오빠들..... OO공듀님에게 쬬꼬우유 사쥬시면 안데여? 쬬꼬우유가 너무 마시고 시퍼여 아잉
+
+내사랑 또꼬우유 알라뷰~ 아 갑쟈기 딸기우유가 마시고 시퍼 져써여! 쬬꼬우유랑 딸긔우유를 쥬세여!
+
+웅웅! 쬬꼬,딸긔 우유! 와! 고마버요 잘먹을게요!! OO공듀는 우리 으른양 오빠들을 따랑해~ 쪽! (귀엽고 바보처럼 웃으면서) 에헤헤헿헤헤` },
+{ id:43, text:`마계의 귀여운 마왕이에요~~오~~~
+
+귀엽죠? 귀엽지? 우우우우......귀엽다고해줘잉.......!!!
+
+안해주니까 OO이 화났쪄!!!! 이잉.......ㅠㅠㅠ
+
+나 귀여...워....? 귀여워?? 헤햇....
+
+OO이 기분좋아졌당!!! 에헤헤헤
+
+기엽찌!! 기엽찌!!!!
+
+뭐? 마왕다운 사람이 되어야한다고?
+
+우이이이잉....좀 귀엽고싶다고이잉.......
+
+나도 사랑받고싶은 다섯짤이라고 잉.......
+
+사랑해줘!!!` },
+{ id:44, text:`우후후, 프로듀서! 드디어 이때가 왔네요!!! 치지직 최고의 아이돌 OO의, 호화찬란한 데뷔에요♪
+
+나를 기다리고 있는 전국의 으른양들이 있으니까, 그것에 대답해주는 것이 아이돌의 역할!
+
+귀욤뽀짝세절예트태희의 앵두 같은 입술이 자랑인 나의 애교를 전국의 으른양 여러분들에게 선물해 드릴게요!
+
+이 저의 애교를 원하나요? 좋아요 제가 달콤한 행복을 드리는 대신 여러분들의 마음을 받아가겠어요
+
+에잇 달달 촉촉한 OO이 애교 받아랏 마카롱 다메다메 츄파츕스 다메다메 오니쨔마에게 줄건 세상에서 제일 이쁜 OO의 입쭐  ^^ (쪽)
+
+다른 그 누구보다도 OO를 제일 따랑해죠~ 해죠해죠>< (쪽)
+
+저의 애교가 어떠셨나요? 우후훗 ♪` },
+{ id:45, text:`나빠또나빠또
+
+이따만큼 나빠또
+
+얼마만큼 나빠께?
+
+하늘만큼 땅만큼 나빠또
+
+그러니깐 사죄해
+
+글구 나여기 다쳣또
+
+아파또아파또 아파또
+
+요기요기 아팠또
+
+얼마만큼 아파께?
+
+하늘만큼 땅만큼 아파또
+
+그러니깐 여기호해죠` },
+{ id:46, text:`여봐라! 게 누구 없느냐?! 왔구나 그대여! 내 그대에게 물어볼것이 있다!
+
+본인이 거울을 봤는데 너무너무 귀여운 아이가 있더구나!
+
+누군지 알것같으냐?! 맞다! 바로 이 몸이었다!
+
+엣헴! 자, 그러면 이제 뭘 해야겠느냐? 이이잉~ 모르겠느냐?!
+
+본인의 머리를 쓰담쓰담~ 해주고 안아서 토닥토닥~도 해주고
+
+아구아구, 귀엽다귀엽다~ 해줘야하지않겠느냐! 어서 이리 오너라♡` },
+{ id:47, text:`(노래하듯이) 이짜나 내가 할마리 이쪼 이짜나 내가 OOO 쪼아해
+
+OOO사랑해! 아이 부끄러웡 힝... OOO매일매일 나 꼭 봐야대!
+
+나 OOO지이이인짜 조아서 못참께써ㅠㅠ 나는 식빵 짜요짜요 슈크림빵 다 피료없쪄!
+
+OOO만 필요해애애 아아앙 OOO나빠또ㅜ 나 이런거 못행 ㅜ
+
+나 완전 당황해가꼬 머리가 터어엉~
+
+하구 비어짜낭 그래두 알징? 나 OOO따룽한다ZE★` },
+{ id:48, text:`찹쌀 모찌 찹쌀떡 안에 팥이 들어있는 촵쏼떡 많이 먹으면 질리지만 밋있쪄요
+
+있쥐… 찹쌀떡은 종류도 많아여! 찹살떡 사쥬세여! 사죠요잉 안사주면은 나의 뽀뽀로 홀려주겠떠!
+
+빨리 사죠오! 음…. 쪽! 으음 사줘!! 아… 그래도 안됀단 말이지! 쪽쪽쪽(///)
+
+오!?!?! 녹 녹았떠!!` },
+{ id:49, text:`오빠~ OO눈 기부니쪼아요 왜냐구요? 오빠가 나에게 고백해짜나요
+
+우리 오빠한테 자.기.야 라구 불러주고 시퍼요
+
+구로니까 자기야 사랑해요~ 쪽` },
+{ id:50, text:`OOO 오빠야~♡ OOO오빠야~♡ 아침이야 일어나요~♡
+
+이렇게 귀엽고 사랑스러운 동생
+
+OO가 꺠우는데 일어나야지~♡ 이래도 안일어나는고야~?
+
+우우우우웅 언능 일어나서 귀여운 OO를 봐야지~♡
+
+나 삐진다~ 흥! 칫! 뿡! 하고 삐진다~♡ OO 삐딤삐딤! OO한테 뽑뽀해주면 그만삐질께요
+
+구로니까 어서일어나용♡ 쪽♡` },
+{ id:51, text:`OO는 오빠의 전.용.요.리.사.다냥♡ OO가 요리를 시작하겠다냥~
+
+OO의 사랑이 요~만큼~퐁당~ OO의 마음이 요~만큼~퐁당~ OO의 입술이 요~만큼~퐁당~
+
+마지막으로 OO이의 마법주문!!! 마싯어져라~모에모에뀽☆` },
+{ id:52, text:`옵팡~ ○○이 애교가 쪼아요? 얼마만큼 쪼아요? 이따만큼?
+
+헤헤... 나눈요~ 옵팡의 전부다 쪼은데...
+
+나랑 겨론 해주꺼죠? ○○이눈 이런사랑을 마니마니 받아서 기분이 쪼아요~
+
+구러니까 ○○이의 사랑의 뽑뽀를 바다랏!!! 쪽♡` },
+{ id:53, text:`오빠야~ 오빠야~ OO의 귀여움에 반해버렸냥? 아이잉~
+
+OO눈 애교가튼거 몰.라.용♡ OO가 오빠를 위해서 이것저것 만드럿눈걸?
+
+OO가 맛있는 주문 외워줄께요♡ 마싯어져라 모에모에뀽~ 맛없다구?
+
+OO이 삐딤삐딤 흥! OO눈 삐더뗘요 OO이의 애교를 보고시프면 어서 사과해용♡
+
+헤헤... OO이 화 다풀렸으니 뽀뽀해주께요 쪽♡` },
+{ id:54, text:`우으응... OO눈 애교는 잘못하지만, OOO들하고 마-니 마니 놀구시픈데에...
+
+이렇게 긴 애교글이나 나오구... 놀아주기 싫은고야??
+
+웅? 웅? 히이잉... 왜에에... OO가 이로케 해두??? 똑땅해..!
+
+그래두.. OO가 애교 잘 부릴테니까아... 기여어 해져야해??
+
+쪽♡ 진짜루 안노라주꼬에요? 으부... OO 안노라줘서 똑땅해! 우음...
+
+그러며언... 읏챠~ 이렇게 안고있는거두? 헤헤~ 당연하지이!
+
+나눈 세상에서 우리 OOO이 제일 좋아!! 맨날맨날 보고 싶구우...
+
+OOO없이는 못살거 가타아... 항상 사랑해애애 ♡ 웅? 어떻게 믿냐구??
+
+우리 OOO...! OOO, 나봐봐 쪽♡ 이래두? ㅎ 안믿을거야?
+
+내가 이렇게 사랑하는데? 헤헤~ 아구아구 착하다아~!
+
+OOO들 모~두 OO꼬야아... 아무도 뺏을수 없어!
+
+훙훙! 사랑해 OOO들아... 앞으로도 너희만 바라볼게 ㅎ` },
+{ id:55, text:`냥냥! 나는 OO냥이! 너는 복 받은거다 냥!
+
+OO냥이 처럼 이렇게 꾸여운 냥이 봤냐 냥?
+
+OO냥이 처럼 뗵띠한 냥이 봤냐 냥? OO냥이 처럼 지켜주고 싶게 생긴 냥이 봤냐 냥?
+
+고마운 줄 알아라 냥! 마지막으로 나 처럼 이렇게 완벽한 냥이는 세상에 없다냥!
+
+이런 나에게 간택 받았으니 어서 나를 집에 데려가서 키워라 냥! 시...싫다구냥? 어쩔수없찌....
+
+이 방법은 쓰지 않을려고 했는데... 우우웅...OO냥이누운 널 쭈인님이라고 부르묜소 같이 살고 시푼데에에...
+
+쭈인님은 내가 필요없는거냐 냥? 아이잉..쭈인니임..쭈인님 힘들때마다 열시미 애교도 해주게따 냥!
+
+냐아옹~냐옹!(해맑게) 히히 나 꾸엽냐 냥?
+
+앗! 날 키우는 그 선택!매우 좋은 선택이다 냥! 내가 발도장도 찍어주게따 냥!꾸우욱...뽁!` },
+{ id:56, text:`있지… 쓰다듬어줘 안돼…?
+
+그럼 안아줘
+
+그것도 안돼..?
+
+그럼 뽀뽀해줘.. 그것도?
+
+해줘! 해줘!
+
+..그냥 내가 하지 뭐
+
+CHU~♡♡` },
+{ id:57, text:`(최대한 귀엽게)
+나는 고미니이따
+
+싯빵이에 누었는데
+
+너무 푹씨내서 이러날슈가 업따
+
+오또카지` },
+{ id:58, text:`야 라고 해도 돼? 내꺼라고 해도 돼? 우리둘만 아는 애칭이 필요해.
+
+으른양 으른양. 그러니까 오늘부터 내꺼해.` },
+{ id:59, restricted:true, note:'이 항목은 저작권이 있는 노래 가사(러브라이브! "니코니코니")를 인용하고 있어 원문을 그대로 옮기지 않았어요. 실제 가사는 공식 음원이나 가사 사이트에서 확인해주세요.' },
+{ id:60, text:`OOO~ OOO~ OO는 촛코소라빵이 먹구싶어여
+
+둥글둥글 소라빵 안에 까아만 촛코 크림이가 가아득 들어있쪄잉
+
+촛코크림 가득 들은 촛코 소라빵이랑 새에카만 쪽꼬우유랑 같이먹으면 얼마나 마딨게요~?
+
+바로 OO의 커여움 만쿰? 에헷!
+
+이졔 촛 코 빵 사러 가 까욤?
+
+이힝 그롬 나 안아죠
+
+그러면 안고 빵집까지 가죠잉~ 빨리잉~ 이케이케 팔도 벌리구 있쨔냐아~
+
+흐흥(ㅎ웃는 소리) 오빠! 오늘도 됴아해요잉` },
+{ id:61, text:`빵안에 팥이 들어있는 단팥빵! 너뮤너뮤 맜있쪄요!
+
+까맣고 달콤한 단팥빵 빠나나 우유랑 같이 먹으면 넘 좋아여!
+
+단팥빵만 먹구딥퍼요! 슈크림빵도 필요없쪄! 초코소라빵도 필요없쪄!
+
+오직 단팥빵만 스키!` },
+{ id:62, text:`옵빠! 나 띠드버거 먹고띠퍼요!
+
+띠드버거~~
+
+아 빨리 띠드버거~~
+
+나 띠드 대따 조아하는거 알지?
+
+내껀 띠드 두 장!` },
+{ id:63, text:`앗 OOO 오빠♥ OO의 본 모습을 본거에요?
+
+안대에~  이 모습을 봐버리면 나에게 빠져서 헤어나가지 못하는데
+
+앗! 벌써 빠져버렸네! 어쩔수없지모… OO 너무 이쁜걸 히힛!
+
+오빠 내 본모습을 본 건 우리둘만의 비-밀 ★ 뽀뽀! (쪽)` },
+{ id:64, text:`내가왔쪼오~내가왔쪼오~사랑스럽고 깨물어주고싶은 애기가왔쪼요~
+
+내가 내가 마니마니 보고시퍼서왔눈데 이러기야?? 힝힝 나빳쬬.. 힝 나삐디꼬야 삐디꼬라구
+
+구래두 화풀어듀묜 기쁠꼬가툰뎅… 힝 헤헿 화프로요~
+
+마니마니따랑하구 마니마니쪼아해요~ 구로니까 마니마니노라주때여!
+
+귀욥찌요? 귀욥찌요? 세상에서 제일귀욥찌요? 히힣 아이잉~ 따랑해~` },
+{ id:65, text:`나 꿍꼬또 기싱 꿍꼬또 무또오또
+
+(나 꿈꿨어 귀신 꿈꿨어 무서웠어)` },
+{ id:66, text:`흐아~아ㅏ~~ 이불 이불은 넘 따뚯하고 죠아여!
+
+부드럽고 푹신푹신하고 (목소리 작아지면서 꿈뻑)
+
+으어! 때론 얇은 이불! 시원하고 죠아요! 난 이불없음 못쟈!
+
+이불을 온몸에 감싸고 눈을 감으묜 스르륵 잠이.. (목소리 작아지면서 잠듬)` },
+{ id:67, text:`마카롱! OO 먀카롱 먹구띱퍼! 마카롱 마카로옹 먹구띱퍼요..
+
+냐! 마카롱! 샤주시면 안대요?
+
+제에바알료 마아카롱은 여러가지 졸류가 있떠요! 모양도 댜양해요!
+
+일단 구름모양이량 하투모양이량 등등! 그리고 색깔도! 파랑 빨강 노랑 초록 하양! 이렇게 있떠요!!
+
+그럐셔.. 마카롱… 여얼개만 따두세요! 녜? 녜?! 사져요.. OO 마카롱.. 먹구싶어요!
+
+돈도 드릴테니 대신 따두세요..
+
+으응으응 따둬~ 하 한번마안… OO가 이렇계 원하눈데.. ~치이.. 알았떠요..
+
+쟤가 사면 되쟈냐요.. 아쪄찌! 여기! 마카룡 여얼개만 주세요! 히히 녜! 다 떨어졌다구요…?
+
+흐잉.. 알쪄요 딴데 찾아볼게요.. OO 꼭 먀카롱 먹구 말그야!` },
+{ id:68, text:`OO는~ 애교가튼거 모태용~~ OOO이 시켜도
+
+OO는! 애교가튼거 안할꾸에여염~` },
+{ id:69, text:`메론빵 OO은 메론빵이 먹고시퍼요! 메론빵 따두세요!
+
+안 따둘거에요? 안 사주면 저 화낼꺼에요!?
+
+이렇게 하면 사줄수밖에 없겠죠? 히히 자 이제 따두세요! 안 댄다고요..?
+
+아이잉 사줘이이잉 으으유ㅠ(대충 울어요)
+
+정말로… 안 사줄거예요.,..? 정말로? 9… 그럼.. 필사기를 쓰는 수밖에… (쪽)사줘요이잉 ㅎ` },
+{ id:70, text:`애기OO 안아줘어 안대여?잉 그럼 뽑뽀해줭♥안대는거에여..?
+
+잉..그럼 애기 OO 시른고에여?그런고에여??
+
+잉 애기OO 넘모 슬펑..ㅜ웅? 뽑뽀해줄꼬얌?아잉 애기OO 부끄러웡!><` },
+{ id:71, text:`뿌우우우우! OO는 귀여운 아기 코끼리!
+
+으른양이 주는 도네도 이러케! 이러케! 끼이이이이다란 코로 받아낼꼬에요!
+
+뿌우~ 뿌우~
+
+세상에 코끼리는 많지만 OO처럼 귀엽고 깜찍한 아기 코끼리는 없다구요!
+
+으른양도 OO처럼 코끼리 할래요? 같이 뿌우우우우~ 하면서 햄버거 먹어요~
+
+항상 혼자서 햄버거 먹어서 외로웠는데...
+
+OOO이 OO랑 같이 먹어준다면 쩌어어어어엉말 기쁠꼬에요!!
+
+기쁨의 뿌우우우! 뿌우우우우우우~ 만약에... 안 해준다면? OO가 코로 때찌! 때지! 뿌우우우우~~~~` },
+{ id:72, text:`할말이 있어
+
+이짜나 내가 할마리 이쬬
+
+이짜나 내가 너를 됴야행 이만쿰 이만쿰
+
+이만쿰 이만쿰 내가 너를 됴야행
+
+에잇! 하튜 공격! 쬬기쬬기이~
+
+구랭! 너 말양! 너어~ 내가 마아니
+
+됴야하는거 알지? 머?! 멀랏따뀽?
+
+머?! 기여운 척 하디 말라구? 시뎌! 하끄야!
+
+으앙! 삐딜꼬야! 머? 미야나다고? 구랭 대신 이본마니 인고다?
+
+나 마니 애껴주꼬야? 그롤꼬지? 우웅~` },
+{ id:78, text:`아잉아잉 마싯뉸거 사듀떼요ㅠ3ㅠ 나만큼 귀요워디고시포? ㅇ3ㅇ` },
+{ id:79, text:`OOO… 많이 추워?
+
+그럼 내가 따뜻하게 해 줄게…
+
+이리 와~
+
+와락♡` },
+{ id:80, text:`이짜나 이짜나 OOO 나 이제 OOO을 좋아하는 마음이 많이 많이 커저서
+
+OOO만 보고 이야기해도 나 자꾸자꾸 애교가 흘러나오나봐
+
+그러니까 앞으로도 OOO마니마니 좋아해주면 나도 OOO매일 매일 좋다고 말해줄게! (뽀뽀가득)
+
+그러니까 OOO도 000 싫어하면 안대안대 알겠지?
+
+오늘 하루도 고생 많았어 OOO!` },
+{ id:81, text:`자 OOO지금 몇신지 알아? 벌써 오후 9시래!
+
+그치만 9시.. 착한 어린이들은 10시에 자는데 나는 우리 오빠 좋아하니까
+
+나쁜 어린이가 대서… 아니 빨리 어른이 되서 우리 오빠랑 행복하게 있고 싶어요
+
+그러니까 OOO가 어른이 될때까지 기다려주고 더 어엿하고
+
+사랑스러운 OOO로 있을 거니까 앞으로도 우리 오빠랑 행복하게매일매일 지낼께
+
+그러니까 끝까지 로제타 기다려줘야해! 알겠지? 고마워` },
+{ id:82, text:`이짜나 OOO! 혹시 자고 있어? 자고 있다고?
+
+거짓말 지금 내 목소리 듣고 씨익 웃었으면서 그런 거짓말 하면 안돼
+
+아직 안자고 이쓰면 OOO 꼭 안아주면 안댈까?
+
+그치만 OOO지금 밤이 무서워서 잠이 안오는데 OOO꼭 안아주면 안댈까?
+
+오빠가 나 꼭 안아주면 나 코오 잘 수 있을 것 같은데 그러니까
+
+나 잘때까지 꼬옥 쓰담쓰담 해줘야대! 오빠 사랑해!` },
+{ id:83, text:`OOO 내가 룰렛 돌려가지고 애교 부리는거 시간 너무 빨리 걸렸지
+
+내가 이럴줄 아라써 내가 부리는 애교에 참지 못하고 다들 머리가 꽁! 하고 깨져버렸데
+
+이제 우리 오빠들이 좋아했던 애교 시간이 끝나서 나도 흐규흐규 슬퍼!
+
+우리 오빠들도 애기OOO 업서져따고 슬퍼하지 말고 다음에 애기 OOO등장할꺼니까 꼭 기다려줘야해!
+
+다시 애기OOO로 돌아오면 로제타 좋아해! 하고 다시 웃으면서 반겨줘!` },
+{ id:84, text:`뀨뀨냐냐는 뀨뀨냥냥으로 하고 뀨꾜뇽뇽 너에게 꺄꺄늉늉하면서 안기는
+
+냐는 꺄꺄냐냐하며 좋아하는 너는 뀽뀽뇽뇽하며
+
+냐를 안아주면 꺄꾜너냥하면 뀨뀨닝닝하면 부비부비를 하고 부비부비를 햐면
+
+뀨꺄뇨뇨하며 너에게 (쪽)인 것이다. 꺙꾱냐냥인것이댜~` },
+{ id:85, text:`으앙앙앙~~!!
+
+우리 오빠~💗 지금 뭐 하고 있쪄요오오~? (찡긋~✩)
+
+OO는 오빠 생각만 하다가… 심장 터질뻔 했댜!! 🫠💥
+
+왜냐구요?? 흥흥~ 왜긴 왜야~~
+
+우리 오빠가 너무너무너무너무 귀엽고 멋지고 소중해서!!` },
+{ id:86, text:`오빠 없이는 하루도 못 버틸 거 같은 oo의 심정~🐑
+
+지금도 머릿속엔 오빠가 둥둥 떠다니고 있어요~~ 뿌웅💭
+
+오빠 웃는 얼굴 생각하면 OO는 흐흐흐흐~🤭 웃음이 멈추질 않아쪄!!` },
+{ id:87, text:`오빠야~ 있쪄…?
+
+OO는 오빠 없으면… 숨도 못 쉬어!! (들숨 날숨 힘듦…후우…하아…)
+
+오빠 없으면 밥도 안 먹을 거야앙!! (그래도 간식은 몰래 먹…읍읍!!🙊)` },
+{ id:88, text:`으앙 그냥 오빠가 너무 너무 좋아서
+
+OO 가슴이 꼬옥~~ 막~~ 몽글몽글~ 꽉꽉~~💓
+
+하트 뿅뿅 폭탄 맞은 기분이랄까?? 뿅!💘 뿅!💘 뿅!💘` },
+{ id:89, text:`오늘도 세상 누구보다 최고로 고생 많았던 울 오빠!
+
+OO가 폭신한 애정 뽀뽀로 감싸줄게요~💋💋💋
+
+쪽쪽쪽쪽 무한 애정 발사~~!! 쀼우우웅~~🎯✨` },
+{ id:90, text:`내일도 모레도, 그 다음날도!
+
+영원히 우리 오빠가 OO 마음속 1등인 거 알쬬?
+
+아이쒸~~ 몰라몰라!! 그냥 오빠가 너무 좋아!! 너무 사랑해!!
+
+앙~ 오빠앙~ 좋아죽어~~~~~~!!! 💖🐰💖` },
+{ id:91, text:`오빠아아~!!!
+
+지금 내 심장… 와르르 무너졌어!!
+
+왜냐고?? 오빠 생각 너무 많이 하다가 심장이 과부하 걸려버렸쟈나!!💥💓` },
+{ id:92, text:`아니 나 진짜 심각해... 오늘 아침에 눈 뜨자마자
+
+"아… 오빠 뭐하고 있을까…?"
+
+"잘 잤을까…?"
+
+"나 없이도 잘 지내는 거… 그건 반칙인데…?"
+
+이런 생각 하다가 베개 껴안고 혼자 뒤척뒤척~😢
+
+그래서 밥도 못 먹고… 아냐 사실 잘 먹었어🍗
+
+근데 오빠 없으니까… 밥이 그냥 밥이지
+
+사랑의 맛이 안 나…!! 오빠 없인 간장이 없단 말이야!
+
+내 간장 같은 사람… 내 후추 같은 남자… 내 마법의 조미료…✨
+
+그리고 오빠 없으면
+
+내 하루는 진짜… 심심함 그 자체야!
+
+예를 들면
+
+라면에서 스프 빠진 느낌?
+
+치킨에 콜라 안 준 느낌??
+
+마라탕에서 마라 뺀 느낌??
+
+진짜 노잼이야!!🥺
+
+그러니까 오빠… 나랑 평생 붙어 다니자!!
+
+내 애교 1일 3회 정기구독하고~
+
+웃음 100톤 받아가고~
+
+하트는 무제한 리필로 줄게! 💗💗💗` },
+{ id:93, text:`오빠 없인 못 살아~
+
+진짜야! 농담 아냐!
+
+과학적으로도, 논리적으로도, 귀욤적으로도 증명된 사실이야!!
+
+그러니까 나 챙겨줘야 해!! 안 그럼 삐져서 볼 빵빵해질 거야!!!😤🐹` },
+{ id:94, text:`뿌우웅~
+
+사랑해 쪼꼬미 오빠~
+
+세상에서 제일 잘생기고 귀엽고 멋지고 자상하고
+
+나만 바라보는 내 오빠!! 내꺼~ 내꺼~ 진짜 내꺼~!!!💘💍` },
+{ id:95, text:`"아니… 오빠… 나 진짜 오늘 하루종일 생각했거든?
+
+근데 아무리 생각해도, 세상에서 제일 귀여운 생명체가 누구냐면… 바로 나더라? ㅎㅎ
+
+왜냐면 내가 이렇게 귀엽게 오빠를 좋아하고 있으니까~ 🍬
+
+아침에 눈 떴을 때도 '아 오늘은 오빠한테 뭐라고 애교 부리지?' 고민하고,
+
+점심 먹으면서도 '아 오빠가 내 옆에 있었으면 얼마나 좋을까~' 생각하고,
+
+저녁에는… 그냥 오빠 보고 싶어서 심장이 막 바쁘게 뛰더라구.` },
+{ id:96, text:`나 이 정도면 애교도, 사랑도, 심장도 풀타임 근무하는 거 맞지?
+
+오빠, 이렇게 귀여운 나한테 평생 사직서 안 받고 같이 살아야 해 알았지?
+
+그럼 나 이제 오빠 생각하면서 이불 속에 폭 파묻어서 잘래…
+
+근데… 잘 때도 오빠 꿈 꿀 거니까 도망 못 가~ 🌙💖` },
+{ id:97, text:`아니 오빠, 내가 오늘 하루 종일 얼마나 힘들었는 줄 알아?
+
+내 심장이 오빠 생각하느라 초과근무해서 지금 노조 차릴 뻔했다니까?! ❤️‍🔥
+
+아침에 눈 떴는데, 세상에서 제일 잘생긴 오빠 얼굴이 없어서… 눈이 다시 감겨버렸어.
+
+점심엔 밥이 입으로 안 들어가더라, 왜냐면 내 배는 오빠 없으면 텅 비거든~
+
+저녁에는 바람이 불었는데… 어머, 바람마저도 오빠 향기인 거 있지?
+
+결론은… 나 오빠 없으면 안 됨.` },
+{ id:98, text:`심장 고장, 배터리 방전, 감정 회로 폭발, 시스템 오류 남발!
+
+그러니까 오빠, 오늘부터 내 옆에 24시간 상주근무 들어가~
+
+밥은 내가 줄게, 대신 사랑은 무한 충전이야 💖⚡` },
+{ id:99, text:`오빠… 오늘 하루 진짜 힘들었어.
+
+아침에 눈 떴는데 오빠 얼굴이 없으니까 눈꺼풀이 다시 닫힘.
+
+점심에 밥 먹는데 반찬이 맛없더라… 아니, '오빠 맛'이 없어서 그럼.
+
+퇴근길에 바람이 스치길래 '오빠 숨결인가?' 하고 두근거렸어.
+
+집 와서 이불 껴안았는데 오빠인 척하길래 한참 안아줬다가
+
+'넌 솜이잖아!' 하고 버럭함.` },
+{ id:100, text:`결론은… 오빠 없으면 나 숨은 쉬어도 심장은 휴가, 뇌는 방학, 손발은 파업.
+
+오늘부터 24시간 사랑 충전+스킨십 무제한 서비스 제공해줘.
+
+밥은 내가 줄게, 대신 평생 퇴사 불가 정규직 사랑 담당이야 💖⚡` },
+{ id:101, text:`OOO의 애교맛집에 온걸 환영한다냥!
+
+우리집은 오무라이스상이 맛있다냥!
+
+불러볼까냥? 오이시쿠나레 킷따앙~! 뀽~!♥.♥
+
+혹시 맛있었냥? 맛있었으면 쓰담쓰담 해달아냥
+
+(쓰담쓰담 받는중)기분이 너무 좋다냥 맛있게 먹어준 당신의 마음에 OO의 하뚜를 받아라냥~!♥︎.♥︎` },
+{ id:102, text:`OOO의 애교맛집에 찾아 온 것을 환영한다냥!
+
+뭐라고냥?? 내가 귀엽지 않다고 냥?
+
+내가 얼마나 귀엽고 애교가 많은지 보여주겠다 냥!
+
+애교맛집에 애교쟁이 OOO 변신 이다 냥!` },
+{ id:103, text:`당신의 하루가 힘들었다면, 내 애교로 리셋 시켜주겠다냥!
+
+오늘 하루도 나랑 사랑뿅뿅이다냥~!
+
+내가 얼마나 애교가 많은지 보여주겠다냥!
+
+난 OOO이 너무 좋다냥!` },
+{ id:104, text:`00의 하뚜하뚜를 받아라냥!♥️.♥️ 아직 부족한 것 같다냥!
+
+더 보여주겠다냥! 00이눈 우리 ○○이가 너무 좋다냥!
+
+맘에 들었겠지냥? 부족한가냥? 그러면 서비스다냥!
+
+하루에 세 번! 밥 먹을 때, 잘 때 그리고 당신 생각할 때
+
+00이는 ○○만을 생각한다냥!` },
+{ id:105, text:`00냥의 애교맛집에 온 것을 환영한다냥
+
+오늘은 OO만의 애교쟁이 00냥이다냥~♥️
+
+00냥이눈 OO만 보면 애교를 부리고 싶다냥~
+
+OO아 00냥이를 쓰담쓰담 해달라냥(쓰담쓰담 받는 중)
+
+헤헷~ 00냥이눈 우리 OO이가 쓰담쓰담해줄때 제일 행복하다냥
+
+기분좋게해준 보답으로 선물이다냥♥️♥️
+
+00냥이 OO이에게 주는 00냥의 하뚜하뚜를 받아라냥 냥~!♥️ 냥~!♥️` }
+];
+function aegyoPreview(item){
+  if(item.restricted) return '저작권 안내';
+  const firstLine = item.text.split('\n')[0].trim();
+  return firstLine.length > 24 ? firstLine.slice(0,24)+'…' : firstLine;
 }
-document.getElementById('karmaSearch').addEventListener('input', e=> renderKarma(e.target.value));
-document.getElementById('addKarma').addEventListener('click', ()=>{
-state.karma.push({
-  uid:Date.now(),
-  name:'새 닉네임',
-  id:'@newid',
-  tags:[
-    {
-      label:'새 항목',
-      count:1
-    }
-  ]
+function renderAegyoOptions(){
+  const select = document.getElementById('aegyoSelect');
+  select.innerHTML = '<option value="" disabled selected>번호를 선택해주세요</option>' +
+    AEGYO_LINES.map(item=>`<option value="${item.id}">${item.id}. ${escapeHtml(aegyoPreview(item))}</option>`).join('');
+}
+function showAegyo(id){
+  const item = AEGYO_LINES.find(a=>a.id===id);
+  const display = document.getElementById('aegyoDisplay');
+  if(!item){
+    display.innerHTML = '<div class="aegyo-empty">번호를 선택하거나 랜덤 뽑기를 눌러보세요 🎀</div>';
+    return;
+  }
+  if(item.restricted){
+    display.innerHTML = `<div class="aegyo-display-num">No. ${item.id}</div><div class="aegyo-display-text aegyo-note">${escapeHtml(item.note)}</div>`;
+  }else{
+    display.innerHTML = `<div class="aegyo-display-num">No. ${item.id}</div><div class="aegyo-display-text">${escapeHtml(item.text)}</div>`;
+  }
+  document.getElementById('aegyoSelect').value = item.id;
+}
+document.getElementById('aegyoSelect').addEventListener('change', e=>{
+  const id = +e.target.value;
+  if(id) showAegyo(id);
 });
-renderKarma(document.getElementById('karmaSearch').value);
+document.getElementById('aegyoRandom').addEventListener('click', ()=>{
+  const item = AEGYO_LINES[Math.floor(Math.random()*AEGYO_LINES.length)];
+  showAegyo(item.id);
+  showToast(`🎀 ${item.id}번 애교를 뽑았어요!`);
 });
+renderAegyoOptions();
 /* ===================== CAROUSEL SCROLL ===================== */
 function scrollTrack(id, dir){
   document.getElementById(id).scrollBy({left: dir*180, behavior:'smooth'});
@@ -2873,7 +3892,6 @@ let bulkQuickMonths = 1;
 const editableSelectors = [
   '#fanNickText', '#aboutText', '[data-field]',
   '.notice-body .title', '.outfit-name', '.outfit-tag',
-  '.karma-name', '.karma-id', '.karma-tag-label', '.karma-tag-count',
   '.song-title', '.song-artist', '.song-note'
 ];
 function applyEditableTitles(container){
@@ -2983,7 +4001,6 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
   renderSchedule();
   renderOutfits();
   renderSongs();
-  renderKarma();
   renderEvents();
   renderEventPreview();
   renderUpList();
