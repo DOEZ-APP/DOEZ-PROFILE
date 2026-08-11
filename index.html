@@ -535,7 +535,7 @@
     opacity:0;
     pointer-events:none;
     transition:.25s;
-    z-index:9999;
+    z-index:10000;
     box-shadow:0 10px 30px rgba(0,0,0,.25);
 }
 
@@ -948,6 +948,25 @@ body.edit-mode #eventEditor{ display:block; }
 #upList::-webkit-scrollbar-track{
     background:transparent;
 }
+.up-snooze-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+    margin-top:16px;
+    padding-top:14px;
+    border-top:1px solid var(--sand);
+    color:var(--ink-soft);
+    font-size:12px;
+    cursor:pointer;
+}
+.up-snooze-row input{
+    width:15px;
+    height:15px;
+    margin:0;
+    accent-color:var(--mint-deep);
+    cursor:pointer;
+}
 .schedule-modal-actions{
     display:flex;
     gap:10px;
@@ -1135,6 +1154,96 @@ body.edit-mode #eventEditor{ display:block; }
 .schedule-edit-row.is-dragging{ opacity:.45; }
 .schedule-edit-row.is-drag-over-top{ box-shadow:inset 0 3px 0 var(--mint-deep); }
 .schedule-edit-row.is-drag-over-bottom{ box-shadow:inset 0 -3px 0 var(--mint-deep); }
+
+  /* ---------- Dark mode ---------- */
+  .theme-toggle{
+    position:relative; width:68px; height:36px; padding:3px; border:1px solid var(--sand);
+    border-radius:999px; background:var(--paper); color:var(--ink-soft); cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:space-between; font-size:15px;
+    transition:background .2s ease, border-color .2s ease, transform .15s ease;
+  }
+  .theme-toggle:hover{ transform:translateY(-2px); background:var(--mint-pale); }
+  .theme-toggle:focus-visible{ outline:2px solid var(--mint-deep); outline-offset:3px; }
+  .theme-toggle .theme-knob{
+    position:absolute; top:3px; left:3px; width:28px; height:28px; border-radius:50%;
+    background:var(--gold); box-shadow:0 2px 5px rgba(0,0,0,.2); transition:transform .22s ease, background .22s ease;
+  }
+  .theme-toggle .theme-icon{ position:relative; z-index:1; width:28px; text-align:center; line-height:28px; }
+  .mode-toggle{
+    position:relative; width:86px; height:36px; padding:3px; border:1px solid var(--sand);
+    border-radius:999px; background:var(--paper); color:var(--ink-soft); cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:space-between;
+    font-family:'Gowun Dodum',sans-serif; font-size:11px; font-weight:700;
+    transition:background .2s ease, border-color .2s ease, transform .15s ease;
+  }
+  .mode-toggle:hover{ transform:translateY(-2px); background:var(--mint-pale); }
+  .mode-toggle:focus-visible{ outline:2px solid var(--mint-deep); outline-offset:3px; }
+  .mode-toggle .mode-knob{
+    position:absolute; top:3px; left:3px; width:38px; height:28px; border-radius:999px;
+    background:var(--mint-pale); box-shadow:0 2px 5px rgba(0,0,0,.14); transition:transform .22s ease, background .22s ease;
+  }
+  .mode-toggle .mode-label{ position:relative; z-index:1; width:38px; text-align:center; line-height:28px; }
+  .mode-toggle:not(.is-editing) .mode-label.view,
+  .mode-toggle.is-editing .mode-label.edit{ color:#332C24; }
+  .mode-toggle.is-editing .mode-knob{ transform:translateX(40px); background:var(--peach-deep); }
+  body.dark-mode .mode-toggle .mode-knob{ background:var(--gold); }
+  body.dark-mode .mode-toggle.is-editing .mode-knob{ background:var(--peach-deep); }
+  html.dark-mode,
+  body.dark-mode{
+    --cream:#171615;
+    --paper:#24211F;
+    --ink:#F3EEE7;
+    --ink-soft:#C9BFB6;
+    --mint:#E8B849;
+    --mint-deep:#FFD77A;
+    --mint-pale:#3A301D;
+    --peach:#714B43;
+    --peach-deep:#E79A81;
+    --gold:#F2C75C;
+    --sand:#504942;
+    --ring:#F2C75C;
+    --shadow:0 8px 24px rgba(0,0,0,.35);
+  }
+  body.dark-mode .theme-toggle .theme-knob{ transform:translateX(32px); background:#5B513E; }
+  body.dark-mode .hero-tag{ background:rgba(36,33,31,.9); }
+  body.dark-mode .ld-box.dislike,
+  body.dark-mode .notice-image-remove,
+  body.dark-mode .schedule-delete{ background:#4A302C; }
+  body.dark-mode .notice-editor{ background:#2D2522; }
+  body.dark-mode .calendar-weekday,
+  body.dark-mode .calendar-day.is-outside,
+  body.dark-mode .schedule-editor-row,
+  body.dark-mode .schedule-drag-handle,
+  body.dark-mode .schedule-detail-item,
+  body.dark-mode .event-editor-row,
+  body.dark-mode .songbook-search,
+  body.dark-mode .song-card{ background:#2A2724; }
+  body.dark-mode .calendar-day.is-today{ background:#4A3C1E; }
+  body.dark-mode .bulk-months-select{ background:#2D2820; color:var(--ink); }
+  body.dark-mode [contenteditable="true"]{ background:rgba(231,154,129,.12); }
+  body.dark-mode .song-language-chip{ background:#29352F; border-color:#465A50; }
+  body.dark-mode .event-card{ background:#3A301D; }
+  body.dark-mode .event-page{ color:#E0C786; }
+  body.dark-mode .event-editor-delete,
+  body.dark-mode .up-delete,
+  body.dark-mode .schedule-edit-delete{ background:#4A302C; }
+  body.dark-mode .up-item-editor,
+  body.dark-mode .up-link-item{ background:#2A2724; color:var(--ink); }
+  body.dark-mode .up-item-editor input,
+  body.dark-mode .thumb-btn{ background:var(--paper); color:var(--ink); }
+  body.dark-mode .schedule-edit-category,
+  body.dark-mode .schedule-edit-hour,
+  body.dark-mode .schedule-edit-minute{ background:#2D2820; border-color:var(--sand); color:var(--ink); }
+  body.dark-mode .notice-detail-link,
+  body.dark-mode .calendar-day.bulk-selected .calendar-day-number,
+  body.dark-mode .bulk-weekday-chip.active,
+  body.dark-mode .bulk-quick-apply,
+  body.dark-mode .bulk-next-btn,
+  body.dark-mode .song-play-link,
+  body.dark-mode .modal-actions .confirm,
+  body.dark-mode .schedule-time-badge,
+  body.dark-mode .schedule-part-btn.active,
+  body.dark-mode .schedule-ampm-btn.active{ color:#332C24; }
 </style>
 </head>
 <body>
@@ -1149,10 +1258,19 @@ body.edit-mode #eventEditor{ display:block; }
       </div>
     </div>
     <div class="top-actions">
+      <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="다크 모드로 전환" title="다크 모드로 전환">
+        <span class="theme-knob" aria-hidden="true"></span>
+        <span class="theme-icon" aria-hidden="true">☀️</span>
+        <span class="theme-icon" aria-hidden="true">🌙</span>
+      </button>
       <span class="pill">DOEZ ARCHIVE</span>
       <span class="edit-badge">✎ 편집 모드</span>
       <button class="icon-btn" id="adminBtn" title="관리자 인증">⚙</button>
-<button class="icon-btn" id="previewToggleBtn" title="일반모드로 보기" style="display:none;">👁</button>
+<button class="mode-toggle" id="previewToggleBtn" type="button" aria-pressed="false" aria-label="편집모드로 전환" title="편집모드로 전환" style="display:none;">
+  <span class="mode-knob" aria-hidden="true"></span>
+  <span class="mode-label view" aria-hidden="true">일반</span>
+  <span class="mode-label edit" aria-hidden="true">편집</span>
+</button>
 <button class="icon-btn" id="saveBtn" title="저장" style="display:none;">💾</button>
     </div>
   </div>
@@ -1516,6 +1634,25 @@ const app = initializeApp(firebaseConfig);
 
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+/* ===================== THEME ===================== */
+const themeToggle = document.getElementById('themeToggle');
+
+function applyTheme(isDark){
+  document.documentElement.classList.toggle('dark-mode', isDark);
+  document.body.classList.toggle('dark-mode', isDark);
+  themeToggle.setAttribute('aria-pressed', String(isDark));
+  themeToggle.setAttribute('aria-label', isDark ? '라이트 모드로 전환' : '다크 모드로 전환');
+  themeToggle.title = isDark ? '라이트 모드로 전환' : '다크 모드로 전환';
+}
+
+applyTheme(localStorage.getItem('doezTheme') === 'dark');
+
+themeToggle.addEventListener('click', ()=>{
+  const isDark = !document.body.classList.contains('dark-mode');
+  applyTheme(isDark);
+  localStorage.setItem('doezTheme', isDark ? 'dark' : 'light');
+});
 
 onAuthStateChanged(auth, (user)=>{
   if(user){
@@ -3928,9 +4065,16 @@ function applyEditMode(){
   adminBtn.title = isAdmin ? '로그아웃' : '관리자 인증';
 
   const previewToggleBtn = document.getElementById('previewToggleBtn');
-  previewToggleBtn.style.display = isAdmin ? 'inline-block' : 'none';
-  previewToggleBtn.textContent = editMode ? '👁' : '✏️';
-  previewToggleBtn.title = editMode ? '일반모드로 보기' : '편집모드로 돌아가기';
+  previewToggleBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+  previewToggleBtn.innerHTML = `
+    <span class="mode-knob" aria-hidden="true"></span>
+    <span class="mode-label view" aria-hidden="true">일반</span>
+    <span class="mode-label edit" aria-hidden="true">편집</span>
+  `;
+  previewToggleBtn.classList.toggle('is-editing', editMode);
+  previewToggleBtn.setAttribute('aria-pressed', String(editMode));
+  previewToggleBtn.setAttribute('aria-label', editMode ? '일반모드로 전환' : '편집모드로 전환');
+  previewToggleBtn.title = editMode ? '일반모드로 전환' : '편집모드로 전환';
 
   if(!editMode){
     bulkAddMode = false;
@@ -3993,6 +4137,27 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
 });
 /* ===================== INIT ===================== */
 /* ===================== INIT ===================== */
+const upModal = document.getElementById("upModal");
+const UP_HIDE_TODAY_KEY = 'doezHideUpToday';
+
+function isUpHiddenToday(){
+  return localStorage.getItem(UP_HIDE_TODAY_KEY) === toLocalDateKey();
+}
+
+function syncUpHideTodayControl(){
+  document.getElementById('hideUpToday').checked = isUpHiddenToday();
+}
+
+function openUpModalAsList(){
+  upModal.classList.add('show');
+  document.getElementById('addUp').style.display = 'none';
+  document.getElementById('saveUp').style.display = 'none';
+  document.getElementById('upEditor').style.display = 'none';
+  document.getElementById('upList').style.display = 'block';
+  syncUpHideTodayControl();
+  renderUpList();
+}
+
 (async () => {
 
   await loadState();
@@ -4004,12 +4169,15 @@ document.getElementById('adminConfirm').addEventListener('click', async () => {
   renderEvents();
   renderEventPreview();
   renderUpList();
+  if(Array.isArray(state.upList) && state.upList.length && !isUpHiddenToday()){
+    openUpModalAsList();
+  }
 })();
-const upModal = document.getElementById("upModal");
 
 document.getElementById("thumbBtn").onclick = () => {
 
   upModal.classList.add("show");
+  syncUpHideTodayControl();
 
   const addBtn = document.getElementById("addUp");
   const saveBtn = document.getElementById("saveUp");
@@ -4025,20 +4193,21 @@ document.getElementById("thumbBtn").onclick = () => {
 renderUpEditor();
 
   }else{
-
-    addBtn.style.display = "none";
-    saveBtn.style.display = "none";
-
-    document.getElementById("upEditor").style.display = "none";
-    document.getElementById("upList").style.display = "block";
-    
-    renderUpList();
+    openUpModalAsList();
 
   }
 
 };document.getElementById("closeUp").onclick = () => {
   upModal.classList.remove("show");
 };
+document.getElementById('hideUpToday').addEventListener('change', event=>{
+  if(event.target.checked){
+    localStorage.setItem(UP_HIDE_TODAY_KEY, toLocalDateKey());
+    upModal.classList.remove('show');
+  }else{
+    localStorage.removeItem(UP_HIDE_TODAY_KEY);
+  }
+});
 document.getElementById("addUp").onclick = () => {
 
   const editor = document.getElementById("upEditor");
@@ -4164,6 +4333,11 @@ function renderUpEditor(){
     <div id="upList"></div>
 
     <div id="upEditor"></div>
+
+    <label class="up-snooze-row" for="hideUpToday">
+        <input id="hideUpToday" type="checkbox">
+        오늘 하루 보지 않기
+    </label>
 
 </div>
 </div>
