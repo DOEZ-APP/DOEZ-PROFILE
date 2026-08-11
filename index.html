@@ -4169,8 +4169,8 @@ function openUpModalAsList(){
   renderEvents();
   renderEventPreview();
   renderUpList();
-  if(Array.isArray(state.upList) && state.upList.length && !isUpHiddenToday()){
-    openUpModalAsList();
+  if(!isUpHiddenToday()){
+    window.setTimeout(openUpModalAsList, 0);
   }
 })();
 
