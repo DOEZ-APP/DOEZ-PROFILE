@@ -126,8 +126,12 @@
     letter-spacing:0.5px;
   }
   /* ---------- Recommended VOD (hero lower-right) ---------- */
+  .vod-widget-row{
+    position:absolute; right:0px; bottom:-220px; z-index:4;
+    display:flex; align-items:stretch; gap:12px;
+  }
   .vod-widget{
-    position:absolute; right:0px; bottom:-220px; z-index:4; width:clamp(245px, 25vw, 255px);
+    flex:0 0 clamp(245px, 25vw, 255px);
     overflow:hidden; border:1px solid rgba(255,255,255,.72); border-radius:14px;
     background:rgba(255,255,255,.94); box-shadow:0 8px 22px rgba(51,44,36,.22);
     backdrop-filter:blur(8px);
@@ -150,11 +154,11 @@
   .vod-remove-btn{ background:#F8E5E0; color:#B75549; }
   body.edit-mode .vod-add-btn, body.edit-mode .vod-remove-btn{ display:inline-flex; align-items:center; }
   body.edit-mode .vod-open-link{ display:none; }
-  /* ---------- VOD hover info (left empty space beside widget) ---------- */
+  /* ---------- VOD hover info (left empty space beside widget, height matched via flex) ---------- */
   .vod-hover-info{
-    position:absolute; z-index:3;
-    right:calc(clamp(245px, 25vw, 255px) + 14px); top:calc(100% + 12px);
-    width:clamp(180px, 20vw, 230px); pointer-events:none;
+    order:-1; flex:0 0 clamp(180px, 20vw, 230px);
+    display:flex; flex-direction:column; justify-content:center;
+    pointer-events:none;
     background:rgba(32,28,26,.9); color:#F7EBD8; backdrop-filter:blur(6px);
     border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px 14px;
     opacity:0; transform:translateY(6px); transition:opacity .18s ease, transform .18s ease;
@@ -167,8 +171,20 @@
   .vod-widget:hover ~ .vod-hover-info,
   .vod-widget:focus-within ~ .vod-hover-info{ opacity:1; transform:translateY(0); }
   @media(max-width:680px){
-    .vod-widget{ position:relative; right:auto; bottom:auto; width:100%; margin:12px 0 0; }
-    .vod-hover-info{ display:none; }
+    .vod-widget-row{ display:none; }
+    .vod-mobile-btn{ display:flex; }
+    body.vod-modal-open{ overflow:hidden; }
+    body.vod-modal-open .vod-widget-row{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      position:fixed; inset:0; width:auto; z-index:70; gap:12px; padding:56px 20px 24px;
+      background:rgba(20,17,15,.78); backdrop-filter:blur(4px);
+    }
+    body.vod-modal-open .vod-widget{ width:100%; max-width:360px; flex:0 0 auto; }
+    body.vod-modal-open .vod-hover-info:not([hidden]){
+      display:flex; order:2; position:static; opacity:1; transform:none; pointer-events:auto;
+      width:100%; max-width:360px; flex:0 0 auto;
+    }
+    body.vod-modal-open .vod-modal-close{ display:flex; }
     .hero{ overflow:visible; }
   }
   .hero-avatar-wrap{
@@ -724,6 +740,32 @@ body.edit-mode #eventEditor{ display:block; }
 
 .thumb-btn:hover{
     transform:scale(1.08) rotate(-8deg);
+}
+.vod-mobile-btn{
+    display:none;
+    position:absolute;
+    left:244px;
+    top:88px;
+    width:48px;
+    height:48px;
+    border:3px solid var(--gold);
+    border-radius:50%;
+    background:#fff;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    cursor:pointer;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);
+    transition:.2s;
+}
+.vod-mobile-btn:hover{ transform:scale(1.08) rotate(-8deg); }
+.vod-modal-close{
+    display:none;
+    position:fixed; top:16px; right:16px; z-index:71;
+    width:38px; height:38px; border:0; border-radius:50%; cursor:pointer;
+    background:rgba(255,255,255,.94); color:var(--ink); font-size:18px; line-height:1;
+    align-items:center; justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.22);
 }
 .modal{
     position:fixed;
@@ -1339,6 +1381,8 @@ body.edit-mode #eventEditor{ display:block; }
   <div class="panel active" id="panel-profile">
       <div class="hero">
         <div class="hero-tag">WELCOME TO DOEZ'S WORLD</div>
+        <div class="vod-widget-row">
+        <button class="vod-modal-close" id="vodModalClose" type="button" aria-label="닫기">✕</button>
         <section class="vod-widget" id="vodWidget" aria-label="추천 영상 VOD">
           <div class="vod-widget-head">
             <h2 class="vod-widget-title">추천 영상 VOD</h2>
@@ -1362,11 +1406,13 @@ body.edit-mode #eventEditor{ display:block; }
             <span class="vod-hover-duration" id="vodHoverDuration" hidden></span>
           </div>
         </div>
+        </div>
       </div>
     <div class="hero-avatar-wrap">
       <div class="hero-avatar-ring"></div>
       <div class="hero-avatar"><img src="doez-portrait.png" alt="도이지"></div>
-<button class="thumb-btn" id="thumbBtn">👍</button>    </div>
+<button class="thumb-btn" id="thumbBtn">👍</button>
+<button class="vod-mobile-btn" id="vodMobileBtn" type="button" aria-label="추천 영상 VOD 보기">🎬</button>    </div>
     <div class="identity">
       <h2 class="identity-name">도이지 <span class="en">DOEZ</span></h2>
       <p class="identity-meta">버추얼 · 게임 · 소통 방송 &nbsp;|&nbsp; 팬닉: <span contenteditable="false" id="fanNickText">&#176;ezOOO</span></p>
@@ -1996,9 +2042,6 @@ function closeVodAddModal(){
 
 document.getElementById('vodAddBtn').addEventListener('click', openVodAddModal);
 document.getElementById('vodAddCancel').addEventListener('click', closeVodAddModal);
-document.getElementById('vodAddModal').addEventListener('click', event=>{
-  if(event.target === event.currentTarget) closeVodAddModal();
-});
 document.getElementById('vodAddConfirm').addEventListener('click', async ()=>{
   const link = safeVodLink(document.getElementById('vodLinkInput').value);
   const error = document.getElementById('vodAddError');
@@ -2032,6 +2075,22 @@ document.getElementById('vodNext').addEventListener('click', ()=>{
   if(!Array.isArray(state.vods) || state.vods.length < 2) return;
   currentVodIndex = (currentVodIndex + 1) % state.vods.length;
   renderVods();
+});
+
+function openVodMobileModal(){
+  document.body.classList.add('vod-modal-open');
+  window.setTimeout(()=> document.getElementById('vodModalClose').focus(), 0);
+}
+function closeVodMobileModal(){
+  document.body.classList.remove('vod-modal-open');
+}
+document.getElementById('vodMobileBtn').addEventListener('click', openVodMobileModal);
+document.getElementById('vodModalClose').addEventListener('click', closeVodMobileModal);
+document.querySelector('.vod-widget-row').addEventListener('click', event=>{
+  if(event.target === event.currentTarget) closeVodMobileModal();
+});
+document.addEventListener('keydown', event=>{
+  if(event.key === 'Escape' && document.body.classList.contains('vod-modal-open')) closeVodMobileModal();
 });
 
 /* ===================== TABS ===================== */
