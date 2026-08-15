@@ -333,6 +333,8 @@
   .calendar-title{ color:var(--mint-deep); font-family:'Gaegu',cursive; font-size:20px; font-weight:700; }
   .calendar-nav{ width:30px; height:30px; border:1px solid var(--sand); border-radius:50%; background:var(--paper); color:var(--mint-deep); cursor:pointer; font-size:18px; line-height:1; }
   .calendar-nav:hover{ background:var(--cream); }
+  .schedule-stats-btn{ display:inline-flex; align-items:center; gap:6px; flex:0 0 auto; background:var(--paper); border:1px solid var(--sand); border-radius:999px; padding:7px 14px; font-family:'Gowun Dodum',sans-serif; font-size:12px; font-weight:700; color:var(--mint-deep); cursor:pointer; white-space:nowrap; transition:transform .15s ease, background .15s ease; }
+  .schedule-stats-btn:hover{ transform:translateY(-2px); background:var(--mint-pale); }
   .calendar-grid{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); }
   .calendar-weekday{ padding:8px 2px; background:#FCFAF5; border-bottom:1px solid var(--sand); color:var(--ink-soft); font-size:11px; font-weight:700; text-align:center; }
   .calendar-weekday:first-child{ color:#D06E62; }
@@ -573,6 +575,23 @@
   .schedule-part-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--peach-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; }
   .schedule-time-badge{ display:inline-block; margin-left:6px; padding:2px 8px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:10px; font-weight:700; vertical-align:middle; font-family:'Space Mono',monospace; }
   .schedule-detail-empty{ padding:22px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
+  .content-stats-box{ max-width:480px; }
+  .stats-summary-row{ display:flex; gap:8px; margin:2px 0 20px; }
+  .stats-summary-card{ flex:1; min-width:0; text-align:center; padding:12px 6px; border:1px solid var(--sand); border-radius:12px; background:var(--mint-pale); }
+  .stats-summary-num{ display:block; font-family:'Space Mono',monospace; font-size:22px; font-weight:700; color:var(--mint-deep); line-height:1.2; }
+  .stats-summary-label{ display:block; margin-top:3px; color:var(--ink-soft); font-size:11px; line-height:1.3; }
+  .stats-section-title{ margin:0 0 12px; color:var(--ink-soft); font-size:12px; font-weight:700; letter-spacing:0.3px; }
+  .stats-bar-row{ display:flex; align-items:center; gap:9px; margin-bottom:9px; }
+  .stats-bar-label{ flex:0 0 64px; overflow:hidden; color:var(--ink); font-size:12px; font-weight:700; text-overflow:ellipsis; white-space:nowrap; }
+  .stats-bar-track{ flex:1; height:11px; border-radius:999px; background:var(--sand); overflow:hidden; }
+  .stats-bar-fill{ display:block; height:100%; border-radius:999px; background:var(--bar-color); }
+  .stats-bar-value{ flex:0 0 auto; min-width:64px; color:var(--ink-soft); font-family:'Space Mono',monospace; font-size:11px; text-align:right; }
+  .stats-divider{ margin:18px 0; border:none; border-top:1px dashed var(--sand); }
+  .stats-part-bar{ display:flex; height:20px; margin-bottom:10px; border:1px solid var(--sand); border-radius:999px; overflow:hidden; }
+  .stats-part-seg{ display:block; height:100%; background:var(--seg-color); }
+  .stats-part-legend{ display:flex; flex-wrap:wrap; gap:6px 16px; color:var(--ink-soft); font-size:12px; }
+  .stats-part-legend .dot-sw{ display:inline-block; width:8px; height:8px; margin-right:5px; border-radius:50%; background:var(--sw-color); vertical-align:middle; }
+  .stats-empty{ padding:26px 10px; color:var(--ink-soft); font-size:13px; text-align:center; }
   .song-add-form{ display:flex; flex-direction:column; gap:12px; flex:1 1 auto; min-height:0; overflow-y:auto; padding-right:4px; margin:4px 0 14px; }
   .song-add-field{ display:flex; flex-direction:column; gap:5px; color:var(--ink-soft); font-size:12px; font-weight:700; text-align:left; }
   .song-add-field input, .song-add-field select{ width:100%; padding:9px 12px; border:1px solid var(--sand); border-radius:10px; background:var(--paper); color:var(--ink); font-family:'Gowun Dodum',sans-serif; font-size:13px; margin-bottom:0; }
@@ -1034,6 +1053,21 @@ body.edit-mode #eventEditor{ display:block; }
 }
 
 #upList::-webkit-scrollbar-track{
+    background:transparent;
+}
+#upEditor{
+    max-height:360px;
+    overflow-y:auto;
+    padding-right:6px;
+}
+#upEditor::-webkit-scrollbar{
+    width:6px;
+}
+#upEditor::-webkit-scrollbar-thumb{
+    background:#E8C86A;
+    border-radius:999px;
+}
+#upEditor::-webkit-scrollbar-track{
     background:transparent;
 }
 .up-snooze-row{
@@ -1568,7 +1602,10 @@ body.edit-mode #eventEditor{ display:block; }
   <!-- ================= SCHEDULE ================= -->
   <div class="panel" id="panel-schedule">
     <div class="card">
-      <h2><span class="dot"></span>&#50900;&#44036; &#51068;&#51221;</h2>
+      <div class="carousel-head">
+        <h2><span class="dot"></span>&#50900;&#44036; &#51068;&#51221;</h2>
+        <button type="button" class="schedule-stats-btn" id="scheduleStatsBtn"><span aria-hidden="true">📊</span> 컨텐츠 비율</button>
+      </div>
       <div id="scheduleList"></div>
       <div class="calendar-admin" id="scheduleAdmin"></div>
     </div>
@@ -1680,6 +1717,16 @@ body.edit-mode #eventEditor{ display:block; }
     <h3 id="bulkScheduleTitle">선택한 날짜에 일정 추가</h3>
     <p class="detail-date" id="bulkScheduleCount"></p>
     <div class="schedule-detail-list" id="bulkScheduleFormWrap"></div>
+  </div>
+</div>
+
+<!-- ================= CONTENT STATS MODAL ================= -->
+<div class="modal-overlay" id="contentStatsModal" aria-hidden="true">
+  <div class="modal-box schedule-detail-box content-stats-box" role="dialog" aria-modal="true" aria-labelledby="contentStatsTitle">
+    <button class="schedule-detail-close" type="button" id="contentStatsClose" aria-label="닫기">&#215;</button>
+    <h3 id="contentStatsTitle">컨텐츠 비율</h3>
+    <p class="detail-date" id="contentStatsDate"></p>
+    <div class="schedule-detail-list content-stats-body" id="contentStatsBody"></div>
   </div>
 </div>
 
@@ -2911,6 +2958,92 @@ function renderSchedule(){
   updateCalendarViews();
   renderScheduleAdmin();
 }
+
+/* ===================== MONTHLY CONTENT STATS ===================== */
+function computeMonthlyContentStats(year, month){
+  const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
+  const items = state.schedule.filter(item=>item.date && item.date.startsWith(monthKey));
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const categoryCounts = {};
+  const partCounts = { '1부':0, '2부':0, '미지정':0 };
+  const dateStatus = {};
+  items.forEach(item=>{
+    categoryCounts[item.category] = (categoryCounts[item.category]||0) + 1;
+    if(item.category==='휴방'){
+      if(dateStatus[item.date]!=='broadcast') dateStatus[item.date] = 'rest';
+    } else {
+      dateStatus[item.date] = 'broadcast';
+      const partKey = (item.part==='1부' || item.part==='2부') ? item.part : '미지정';
+      partCounts[partKey]++;
+    }
+  });
+  let broadcastDays = 0, restDays = 0;
+  Object.values(dateStatus).forEach(status=>{ if(status==='broadcast') broadcastDays++; else restDays++; });
+  const unscheduledDays = Math.max(0, daysInMonth - broadcastDays - restDays);
+  const categoryRows = SCHEDULE_CATEGORIES
+    .map(category=>({ name:category.name, color:category.color, count: categoryCounts[category.name]||0 }))
+    .filter(row=>row.count>0)
+    .sort((a,b)=>b.count-a.count);
+  return { daysInMonth, totalEntries: items.length, broadcastDays, restDays, unscheduledDays, categoryRows, partCounts };
+}
+function renderContentStatsBody(year, month){
+  const stats = computeMonthlyContentStats(year, month);
+  if(stats.totalEntries===0){
+    return '<div class="stats-empty">이 달에는 등록된 일정이 없어요.</div>';
+  }
+  const maxCategoryCount = stats.categoryRows[0] ? stats.categoryRows[0].count : 0;
+  const summaryHtml = `<div class="stats-summary-row">
+    <div class="stats-summary-card"><span class="stats-summary-num">${stats.broadcastDays}</span><span class="stats-summary-label">방송일</span></div>
+    <div class="stats-summary-card"><span class="stats-summary-num">${stats.restDays}</span><span class="stats-summary-label">휴방일</span></div>
+    <div class="stats-summary-card"><span class="stats-summary-num">${stats.totalEntries}</span><span class="stats-summary-label">총 일정</span></div>
+  </div>`;
+  const categoryHtml = stats.categoryRows.length ? `<div class="stats-section-title">카테고리별 비율</div>${
+    stats.categoryRows.map(row=>{
+      const pct = stats.totalEntries ? Math.round(row.count/stats.totalEntries*100) : 0;
+      const width = maxCategoryCount ? Math.round(row.count/maxCategoryCount*100) : 0;
+      return `<div class="stats-bar-row"><span class="stats-bar-label">${escapeHtml(row.name)}</span><span class="stats-bar-track"><span class="stats-bar-fill" style="width:${width}%; --bar-color:${row.color}"></span></span><span class="stats-bar-value">${row.count}건 · ${pct}%</span></div>`;
+    }).join('')
+  }` : '';
+  const partTotal = stats.partCounts['1부'] + stats.partCounts['2부'] + stats.partCounts['미지정'];
+  let partHtml = '';
+  if(partTotal>0){
+    const pct1 = Math.round(stats.partCounts['1부']/partTotal*100);
+    const pct2 = Math.round(stats.partCounts['2부']/partTotal*100);
+    const pctEtc = Math.round(stats.partCounts['미지정']/partTotal*100);
+    partHtml = `<hr class="stats-divider">
+      <div class="stats-section-title">1부 · 2부 비율</div>
+      <div class="stats-part-bar">
+        ${stats.partCounts['1부']>0 ? `<span class="stats-part-seg" style="width:${stats.partCounts['1부']/partTotal*100}%; --seg-color:var(--gold)"></span>` : ''}
+        ${stats.partCounts['2부']>0 ? `<span class="stats-part-seg" style="width:${stats.partCounts['2부']/partTotal*100}%; --seg-color:var(--peach-deep)"></span>` : ''}
+        ${stats.partCounts['미지정']>0 ? `<span class="stats-part-seg" style="width:${stats.partCounts['미지정']/partTotal*100}%; --seg-color:var(--sand)"></span>` : ''}
+      </div>
+      <div class="stats-part-legend">
+        <span><span class="dot-sw" style="--sw-color:var(--gold)"></span>1부(낮방) ${stats.partCounts['1부']}건 · ${pct1}%</span>
+        <span><span class="dot-sw" style="--sw-color:var(--peach-deep)"></span>2부(밤방) ${stats.partCounts['2부']}건 · ${pct2}%</span>
+        ${stats.partCounts['미지정']>0 ? `<span><span class="dot-sw" style="--sw-color:var(--sand)"></span>미지정 ${stats.partCounts['미지정']}건 · ${pctEtc}%</span>` : ''}
+      </div>`;
+  }
+  return summaryHtml + categoryHtml + partHtml;
+}
+function openContentStats(){
+  const year = calendarView.year, month = calendarView.month;
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  document.getElementById('contentStatsDate').textContent = `${year}년 ${month+1}월 (${daysInMonth}일)`;
+  document.getElementById('contentStatsBody').innerHTML = renderContentStatsBody(year, month);
+  const modal = document.getElementById('contentStatsModal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden','false');
+}
+function closeContentStats(){
+  const modal = document.getElementById('contentStatsModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden','true');
+}
+document.getElementById('scheduleStatsBtn').addEventListener('click', openContentStats);
+document.getElementById('contentStatsClose').addEventListener('click', closeContentStats);
+document.getElementById('contentStatsModal').addEventListener('click', event=>{
+  if(event.target===event.currentTarget) closeContentStats();
+});
 
 /* ===================== OUTFIT ===================== */
 function openOutfitImage(outfit){
@@ -4556,6 +4689,7 @@ item.querySelector(".up-delete").onclick = ()=>{
 };
 
   editor.appendChild(item);
+  item.querySelector(".up-title-input").focus();
 
 };
 document.getElementById("saveUp").onclick = async () => {
