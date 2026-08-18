@@ -323,9 +323,9 @@
   .notice-detail-image{ display:block; width:100%; max-height:360px; margin-top:16px; border:1px solid var(--sand); border-radius:12px; object-fit:contain; background:var(--cream); }
   .notice-detail-link{ display:inline-flex; align-items:center; justify-content:center; margin-top:18px; padding:10px 15px; border-radius:999px; background:var(--mint-deep); color:#fff; font-size:13px; font-weight:700; }
   .notice-detail-link:hover{ filter:brightness(1.08); }
-  .modal-box.outfit-image-modal-box{ width:min(680px, 92vw); max-height:88vh; padding:20px; }
+  .modal-box.outfit-image-modal-box{ width:min(940px, 96vw); max-width:96vw; max-height:94vh; padding:22px; }
   .outfit-image-modal-box h3{ margin:0 38px 14px 0; color:var(--mint-deep); font-size:23px; }
-  .outfit-image-modal-image{ display:block; width:100%; max-height:70vh; border-radius:12px; object-fit:contain; background:var(--cream); }
+  .outfit-image-modal-image{ display:block; width:100%; max-height:82vh; border-radius:12px; object-fit:contain; background:var(--cream); }
 
   /* ---------- Monthly calendar ---------- */
   .month-calendar{ border:1px solid var(--sand); border-radius:14px; overflow:hidden; background:var(--paper); }
@@ -437,15 +437,27 @@
   }
   body.edit-mode .add-btn{ display:block; }
 
-  /* ---------- Carousels (outfit / balloons) ---------- */
+  /* ---------- Wardrobe ---------- */
   .carousel-head{ display:flex; align-items:center; justify-content:space-between; }
   .carousel-nav{ display:flex; gap:6px; }
-  .carousel-track{
-    display:flex; gap:14px; overflow-x:auto; padding:14px 2px 4px; scroll-behavior:smooth;
+  .wardrobe-category-tabs{ display:flex; gap:8px; margin:2px 0 16px; }
+  .wardrobe-category-btn{
+    min-width:86px; padding:9px 16px; border:1px solid var(--sand); border-radius:999px;
+    background:var(--paper); color:var(--ink-soft); cursor:pointer; font-family:'Gowun Dodum',sans-serif; font-weight:700;
+    transition:background .15s ease, color .15s ease, border-color .15s ease;
   }
-  .outfit-card{ flex:0 0 auto; width:150px; text-align:center; }
+  .wardrobe-category-btn:hover{ background:var(--mint-pale); color:var(--mint-deep); }
+  .wardrobe-category-btn.active{ background:var(--mint-deep); border-color:var(--mint-deep); color:#fff; }
+  .wardrobe-grid{
+    display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:18px; max-height:620px;
+    overflow-y:auto; padding:4px 5px 6px 2px; scrollbar-width:thin; scrollbar-color:var(--mint-deep) var(--mint-pale);
+  }
+  .wardrobe-grid::-webkit-scrollbar{ width:8px; }
+  .wardrobe-grid::-webkit-scrollbar-thumb{ background:var(--mint-deep); border-radius:999px; }
+  .wardrobe-grid::-webkit-scrollbar-track{ background:var(--mint-pale); border-radius:999px; }
+  .outfit-card{ min-width:0; text-align:center; }
   .outfit-swatch{
-    width:150px; height:170px; border-radius:14px; border:2px solid var(--sand);
+    width:100%; aspect-ratio:4 / 5; border-radius:14px; border:2px solid var(--sand);
     display:flex; align-items:center; justify-content:center; font-size:34px; margin-bottom:8px;
     position:relative; overflow:hidden;
   }
@@ -462,6 +474,10 @@
   body.edit-mode .outfit-upload-btn{ display:flex; }
   .outfit-name{ font-size:13px; font-weight:700; }
   .outfit-tag{ font-size:11px; color:var(--ink-soft); }
+  @media(max-width:680px){
+    .wardrobe-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; max-height:58vh; }
+    .wardrobe-category-btn{ flex:1; }
+  }
 
   .balloon-card{ flex:0 0 auto; width:170px; text-align:center; }
   .balloon-swatch{
@@ -1403,7 +1419,7 @@ body.edit-mode #eventEditor{ display:block; }
     <button class="tab-btn active" data-tab="profile">프로필</button>
     <button class="tab-btn" data-tab="notice">공지사항</button>
     <button class="tab-btn" data-tab="schedule">일정</button>
-    <button class="tab-btn" data-tab="outfit">의상</button>
+    <button class="tab-btn" data-tab="outfit">옷장</button>
     <button class="tab-btn" data-tab="songbook">노래책</button>
     <button class="tab-btn" data-tab="aegyo">애교</button>
   </div>
@@ -1616,12 +1632,12 @@ body.edit-mode #eventEditor{ display:block; }
     <div class="card">
       <div class="carousel-head">
         <h2><span class="dot"></span>이지 옷장 👗</h2>
-        <div class="carousel-nav">
-          <button class="icon-btn" onclick="scrollTrack('outfitTrack',-1)">‹</button>
-          <button class="icon-btn" onclick="scrollTrack('outfitTrack',1)">›</button>
-        </div>
       </div>
-      <div class="carousel-track" id="outfitTrack"></div>
+      <div class="wardrobe-category-tabs" role="tablist" aria-label="옷장 분류">
+        <button class="wardrobe-category-btn active" type="button" data-wardrobe-category="outfits" role="tab" aria-selected="true">의상</button>
+        <button class="wardrobe-category-btn" type="button" data-wardrobe-category="hairs" role="tab" aria-selected="false">헤어</button>
+      </div>
+      <div class="wardrobe-grid" id="outfitTrack" role="tabpanel" aria-label="의상 목록"></div>
       <button class="add-btn" id="addOutfit">+ 의상 추가</button>
     </div>
   </div>
@@ -1886,6 +1902,8 @@ async function loadState() {
     if (!snap.exists()) return;
 
     Object.assign(state, snap.data());
+    state.outfits = Array.isArray(state.outfits) ? state.outfits : [];
+    state.hairs = Array.isArray(state.hairs) ? state.hairs : [];
 document.getElementById("fanNickText").innerHTML = state.fanNick;
 document.getElementById("aboutText").innerHTML = state.about;
 
@@ -1927,6 +1945,8 @@ fanNick: "°ezOOO",
   ],
   outfits: [
   ],
+  hairs: [
+  ],
   songs: [
   ],
   events: [
@@ -1939,12 +1959,13 @@ const FIRESTORE_SAFE_STATE_BYTES = 850000;
 function getStateSize(){
   return new TextEncoder().encode(JSON.stringify(state)).length;
 }
-function getOutfitImageBudget(index){
-  const outfit = state.outfits[index];
-  const previousImage = outfit.image || '';
-  outfit.image = '';
+function getWardrobeImageBudget(category, index){
+  const item = state[category]?.[index];
+  if(!item) return 0;
+  const previousImage = item.image || '';
+  item.image = '';
   const usedBytes = getStateSize();
-  outfit.image = previousImage;
+  item.image = previousImage;
   return Math.min(280000, FIRESTORE_SAFE_STATE_BYTES - usedBytes);
 }
 
@@ -3047,10 +3068,18 @@ document.getElementById('contentStatsModal').addEventListener('click', event=>{
 });
 
 /* ===================== OUTFIT ===================== */
-function openOutfitImage(outfit){
-  const image = safeNoticeImage(outfit.image);
+let wardrobeCategory = 'outfits';
+function getWardrobeLabel(category = wardrobeCategory){
+  return category === 'hairs' ? '헤어' : '의상';
+}
+function getWardrobeItems(category = wardrobeCategory){
+  if(!Array.isArray(state[category])) state[category] = [];
+  return state[category];
+}
+function openOutfitImage(item, category){
+  const image = safeNoticeImage(item.image);
   if(!image) return;
-  document.getElementById('outfitImageModalTitle').textContent = outfit.name || '의상 이미지';
+  document.getElementById('outfitImageModalTitle').textContent = item.name || `${getWardrobeLabel(category)} 이미지`;
   document.getElementById('outfitImageModalImage').src = image;
   const modal = document.getElementById('outfitImageModal');
   modal.classList.add('show');
@@ -3067,30 +3096,39 @@ document.getElementById('outfitImageModal').addEventListener('click', event=>{
 });
 function renderOutfits(){
   const track = document.getElementById('outfitTrack');
+  const items = getWardrobeItems();
+  const label = getWardrobeLabel();
   track.innerHTML='';
-  state.outfits.forEach((o,i)=>{
+  track.setAttribute('aria-label', `${label} 목록`);
+  document.querySelectorAll('.wardrobe-category-btn').forEach(button=>{
+    const isActive = button.dataset.wardrobeCategory === wardrobeCategory;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-selected', String(isActive));
+  });
+  document.getElementById('addOutfit').textContent = `+ ${label} 추가`;
+  items.forEach((o,i)=>{
     const c = document.createElement('div'); c.className='outfit-card'+(i===0?' active':'');
-    c.innerHTML = `<div class="outfit-swatch${o.image ? ' has-image' : ''}" data-i="${i}" ${o.image ? `data-outfit-image-index="${i}" role="button" tabindex="${editMode ? -1 : 0}" aria-label="${escapeHtml(o.name || '의상')} 이미지 크게 보기"` : ''} style="${o.image ? '' : 'background:linear-gradient(135deg,var(--mint-pale),var(--sand));'}">
+    c.innerHTML = `<div class="outfit-swatch${o.image ? ' has-image' : ''}" ${o.image ? `data-wardrobe-image-index="${i}" data-wardrobe-category="${wardrobeCategory}" role="button" tabindex="${editMode ? -1 : 0}" aria-label="${escapeHtml(o.name || label)} 이미지 크게 보기"` : ''} style="${o.image ? '' : 'background:linear-gradient(135deg,var(--mint-pale),var(--sand));'}">
         <span class="outfit-visual">${o.image ? `<img src="${o.image}" alt="">` : o.emoji}</span>
-        <label class="outfit-upload-btn" title="이미지 업로드">📷<input type="file" accept="image/*" class="outfit-file-input" data-i="${i}" hidden></label>
+        <label class="outfit-upload-btn" title="이미지 업로드">📷<input type="file" accept="image/*" class="outfit-file-input" data-wardrobe-index="${i}" data-wardrobe-category="${wardrobeCategory}" hidden></label>
       </div>
-      <div class="outfit-name" contenteditable="false" data-outfit-i="${i}">${escapeHtml(o.name)}</div>
-      <div class="outfit-tag" contenteditable="false" data-outfit-i="${i}">${escapeHtml(o.tag)}</div>
-      <button class="remove-btn" data-i="${i}" style="display:none;">✕ 삭제</button>`;
+      <div class="outfit-name" contenteditable="false" data-wardrobe-index="${i}">${escapeHtml(o.name)}</div>
+      <div class="outfit-tag" contenteditable="false" data-wardrobe-index="${i}">${escapeHtml(o.tag)}</div>
+      <button class="remove-btn" data-wardrobe-index="${i}" style="display:none;">✕ 삭제</button>`;
     track.appendChild(c);
   });
   applyEditMode();
   track.querySelectorAll('.remove-btn').forEach(b=>b.addEventListener('click', ()=>{
-    state.outfits.splice(+b.dataset.i,1); renderOutfits();
+    items.splice(+b.dataset.wardrobeIndex,1); renderOutfits();
   }));
   track.querySelectorAll('.outfit-name, .outfit-tag').forEach(el=>el.addEventListener('input', ()=>{
-    const outfit = state.outfits[+el.dataset.outfitI];
-    if(!outfit) return;
-    outfit[el.classList.contains('outfit-tag') ? 'tag' : 'name'] = el.textContent;
+    const item = items[+el.dataset.wardrobeIndex];
+    if(!item) return;
+    item[el.classList.contains('outfit-tag') ? 'tag' : 'name'] = el.textContent;
   }));
-  track.querySelectorAll('[data-outfit-image-index]').forEach(swatch=>{
+  track.querySelectorAll('[data-wardrobe-image-index]').forEach(swatch=>{
     const openImage = ()=>{
-      if(!editMode) openOutfitImage(state.outfits[+swatch.dataset.outfitImageIndex]);
+      if(!editMode) openOutfitImage(getWardrobeItems(swatch.dataset.wardrobeCategory)[+swatch.dataset.wardrobeImageIndex], swatch.dataset.wardrobeCategory);
     };
     swatch.addEventListener('click', event=>{
       if(event.target.closest('.outfit-upload-btn')) return;
@@ -3106,8 +3144,9 @@ function renderOutfits(){
   track.querySelectorAll('.outfit-file-input').forEach(input=>input.addEventListener('change', async e=>{
     const file = e.target.files[0];
     if(!file) return;
-    const i = +input.dataset.i;
-    const maxBytes = getOutfitImageBudget(i);
+    const category = input.dataset.wardrobeCategory;
+    const i = +input.dataset.wardrobeIndex;
+    const maxBytes = getWardrobeImageBudget(category, i);
     if(maxBytes < 70000){
       showToast('❌ 저장 공간이 부족합니다. 기존 이미지를 삭제한 뒤 다시 시도해 주세요.');
       input.value = '';
@@ -3115,10 +3154,8 @@ function renderOutfits(){
     }
     try{
       showToast('이미지 크기를 최적화하는 중입니다…');
-      state.outfits[i].image = await compressImageForFirestore(file, {maxSide:800, maxBytes});
-      const swatch = input.closest('.outfit-swatch');
-      swatch.style.background = '';
-      swatch.querySelector('.outfit-visual').innerHTML = `<img src="${state.outfits[i].image}" alt="">`;
+      getWardrobeItems(category)[i].image = await compressImageForFirestore(file, {maxSide:1000, maxBytes});
+      renderOutfits();
       showToast('✅ 이미지가 최적화되었습니다. 저장을 눌러주세요.');
     }catch(error){
       console.error(error);
@@ -3128,8 +3165,14 @@ function renderOutfits(){
     }
   }));
 }
+document.querySelectorAll('.wardrobe-category-btn').forEach(button=>button.addEventListener('click', ()=>{
+  wardrobeCategory = button.dataset.wardrobeCategory;
+  renderOutfits();
+}));
 document.getElementById('addOutfit').addEventListener('click', ()=>{
-  state.outfits.push({emoji:'✨', name:'새 의상', tag:'태그'}); renderOutfits();
+  const label = getWardrobeLabel();
+  getWardrobeItems().push({emoji:wardrobeCategory === 'hairs' ? '💇' : '✨', name:`새 ${label}`, tag:'태그'});
+  renderOutfits();
 });
 
 /* ===================== SONGBOOK ===================== */
@@ -4511,7 +4554,7 @@ function applyEditMode(){
   document.querySelectorAll('.notice-item[data-notice-index]')
     .forEach(row=> row.tabIndex = editMode ? -1 : 0);
 
-  document.querySelectorAll('[data-outfit-image-index]')
+  document.querySelectorAll('[data-wardrobe-image-index]')
     .forEach(swatch=> swatch.tabIndex = editMode ? -1 : 0);
 
   document.querySelectorAll('.remove-btn')
