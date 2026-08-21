@@ -2986,11 +2986,16 @@ function computeMonthlyContentStats(year, month){
   const monthKey = `${year}-${String(month+1).padStart(2,'0')}`;
   const items = state.schedule.filter(item=>item.date && item.date.startsWith(monthKey));
   const daysInMonth = new Date(year, month+1, 0).getDate();
+  const TOTAL_EXCLUDED_CATEGORIES = ['휴방','공지','기타'];
   const categoryCounts = {};
   const partCounts = { '1부':0, '2부':0, '미지정':0 };
   const dateStatus = {};
+  let totalEntries = 0;
   items.forEach(item=>{
-    categoryCounts[item.category] = (categoryCounts[item.category]||0) + 1;
+    if(!TOTAL_EXCLUDED_CATEGORIES.includes(item.category)){
+      categoryCounts[item.category] = (categoryCounts[item.category]||0) + 1;
+      totalEntries++;
+    }
     if(item.category==='휴방'){
       if(dateStatus[item.date]!=='broadcast') dateStatus[item.date] = 'rest';
     } else {
@@ -3006,11 +3011,11 @@ function computeMonthlyContentStats(year, month){
     .map(category=>({ name:category.name, color:category.color, count: categoryCounts[category.name]||0 }))
     .filter(row=>row.count>0)
     .sort((a,b)=>b.count-a.count);
-  return { daysInMonth, totalEntries: items.length, broadcastDays, restDays, unscheduledDays, categoryRows, partCounts };
+  return { daysInMonth, totalEntries, hasEntries: items.length>0, broadcastDays, restDays, unscheduledDays, categoryRows, partCounts };
 }
 function renderContentStatsBody(year, month){
   const stats = computeMonthlyContentStats(year, month);
-  if(stats.totalEntries===0){
+  if(!stats.hasEntries){
     return '<div class="stats-empty">이 달에는 등록된 일정이 없어요.</div>';
   }
   const maxCategoryCount = stats.categoryRows[0] ? stats.categoryRows[0].count : 0;
