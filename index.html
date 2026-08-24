@@ -550,8 +550,45 @@
   .song-card .remove-btn{ position:absolute; top:50%; right:10px; transform:translateY(-50%); }
   .songbook-empty{ padding:28px 12px; border:1px dashed var(--sand); border-radius:12px; color:var(--ink-soft); font-size:13px; text-align:center; }
   .songbook-add-top{ margin-top:0; margin-bottom:14px; }
-  body.edit-mode .songbook-grid-wrap{ max-height:60vh; overflow-y:auto; padding-right:4px; }
-  @media(max-width:680px){ .songbook-toolbar{ display:block; } .song-filter-row{ margin-top:9px; margin-bottom:14px; } .song-card{ grid-template-columns:1fr; gap:7px; } .song-note{ grid-column:1; max-width:none; text-align:left; } body.edit-mode .songbook-grid-wrap{ max-height:52vh; } }
+.songbook-grid-wrap{
+  max-height:60vh;
+  overflow-y:auto;
+  padding-right:4px;
+  scrollbar-width:thin;
+  scrollbar-color:var(--mint-deep) var(--mint-pale);
+}
+
+.songbook-grid-wrap::-webkit-scrollbar{
+  width:8px;
+}
+
+.songbook-grid-wrap::-webkit-scrollbar-thumb{
+  background:var(--mint-deep);
+  border-radius:999px;
+}
+
+.songbook-grid-wrap::-webkit-scrollbar-track{
+  background:var(--mint-pale);
+  border-radius:999px;
+}
+
+@media(max-width:680px){
+  .songbook-toolbar{ display:block; }
+  .song-filter-row{ margin-top:9px; margin-bottom:14px; }
+  .song-card{
+    grid-template-columns:1fr;
+    gap:7px;
+  }
+  .song-note{
+    grid-column:1;
+    max-width:none;
+    text-align:left;
+  }
+
+  .songbook-grid-wrap{
+    max-height:52vh;
+  }
+}
 
   /* ---------- Modal ---------- */
   .modal-overlay{
