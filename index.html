@@ -1329,7 +1329,7 @@ body.edit-mode #eventEditor{ display:block; }
 }
 .schedule-edit-time-sep{ color:var(--ink-soft); font-weight:700; font-family:'Space Mono',monospace; }
 .schedule-ampm-toggle{ display:flex; gap:4px; }
-.schedule-ampm-btn{
+.schedule-ampm-btn, .schedule-tbd-btn{
     padding:8px 10px;
     border:1px solid var(--sand);
     border-radius:8px;
@@ -1341,7 +1341,7 @@ body.edit-mode #eventEditor{ display:block; }
     cursor:pointer;
     transition:background .15s ease, color .15s ease, border-color .15s ease;
 }
-.schedule-ampm-btn.active{
+.schedule-ampm-btn.active, .schedule-tbd-btn.active{
     background:var(--mint-deep);
     border-color:var(--mint-deep);
     color:#fff;
@@ -1458,7 +1458,7 @@ body.edit-mode #eventEditor{ display:block; }
   body.dark-mode .modal-actions .confirm,
   body.dark-mode .schedule-time-badge,
   body.dark-mode .schedule-part-btn.active,
-  body.dark-mode .schedule-ampm-btn.active{ color:#332C24; }
+  body.dark-mode .schedule-ampm-btn.active, body.dark-mode .schedule-tbd-btn.active{ color:#332C24; }
 </style>
 </head>
 <body>
@@ -2645,6 +2645,7 @@ function openScheduleEditor(dateKey){
             <div class="schedule-ampm-toggle" data-id="${item.id}">
               <button type="button" class="schedule-ampm-btn${item.ampm==='AM' ? ' active' : ''}" data-ampm="AM">AM</button>
               <button type="button" class="schedule-ampm-btn${item.ampm==='PM' ? ' active' : ''}" data-ampm="PM">PM</button>
+              <button type="button" class="schedule-tbd-btn${/\(미정\)\s*$/.test(item.title||'') ? ' active' : ''}" data-tbd="1">미정</button>
             </div>
           </div>
         </div>
@@ -2772,6 +2773,7 @@ document.getElementById('scheduleAddInModal').onclick = ()=>{
         <div class="schedule-ampm-toggle">
           <button type="button" class="schedule-ampm-btn" data-ampm="AM">AM</button>
           <button type="button" class="schedule-ampm-btn" data-ampm="PM">PM</button>
+          <button type="button" class="schedule-tbd-btn" data-tbd="1">미정</button>
         </div>
       </div>
     </div>
@@ -2844,6 +2846,22 @@ document.getElementById('scheduleDetailList').addEventListener('click', event=>{
   const wasActive = button.classList.contains('active');
   group.querySelectorAll('.schedule-ampm-btn').forEach(b=>b.classList.remove('active'));
   if(!wasActive) button.classList.add('active');
+});
+document.getElementById('scheduleDetailList').addEventListener('click', event=>{
+  const button = event.target.closest('.schedule-tbd-btn');
+  if(!button) return;
+  const titleInput = button.closest('.schedule-edit-row').querySelector('.schedule-edit-title');
+  if(!titleInput) return;
+  const wasActive = button.classList.contains('active');
+  if(wasActive){
+    button.classList.remove('active');
+    titleInput.value = titleInput.value.replace(/\s*\(미정\)\s*$/, '');
+  } else {
+    button.classList.add('active');
+    if(!/\(미정\)\s*$/.test(titleInput.value)){
+      titleInput.value = titleInput.value.replace(/\s+$/, '') + ' (미정)';
+    }
+  }
 });
 function updateCalendarViews(){
   renderCalendar(document.getElementById('scheduleList'));
@@ -2999,6 +3017,7 @@ function openBulkScheduleForm(){
           <div class="schedule-ampm-toggle" id="bulkAmpmToggle">
             <button type="button" class="schedule-ampm-btn" data-ampm="AM">AM</button>
             <button type="button" class="schedule-ampm-btn" data-ampm="PM">PM</button>
+            <button type="button" class="schedule-tbd-btn" data-tbd="1">미정</button>
           </div>
         </div>
       </div>
@@ -3018,6 +3037,19 @@ function openBulkScheduleForm(){
     const wasActive = btn.classList.contains('active');
     btn.closest('.schedule-ampm-toggle').querySelectorAll('.schedule-ampm-btn').forEach(b=>b.classList.remove('active'));
     if(!wasActive) btn.classList.add('active');
+  }));
+  wrap.querySelectorAll('.schedule-tbd-btn').forEach(btn=>btn.addEventListener('click', ()=>{
+    const titleInput = document.getElementById('bulkTitle');
+    const wasActive = btn.classList.contains('active');
+    if(wasActive){
+      btn.classList.remove('active');
+      titleInput.value = titleInput.value.replace(/\s*\(미정\)\s*$/, '');
+    } else {
+      btn.classList.add('active');
+      if(!/\(미정\)\s*$/.test(titleInput.value)){
+        titleInput.value = titleInput.value.replace(/\s+$/, '') + ' (미정)';
+      }
+    }
   }));
   wrap.querySelectorAll('.schedule-part-btn').forEach(btn=>btn.addEventListener('click', ()=>{
     const wasActive = btn.classList.contains('active');
